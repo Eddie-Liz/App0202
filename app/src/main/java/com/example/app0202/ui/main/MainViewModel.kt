@@ -11,21 +11,32 @@ import com.example.app0202.di.ServiceLocator
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.app0202.R
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+
+// Icon Source Wrapper
+sealed class IconSource {
+    data class Vector(val imageVector: ImageVector) : IconSource()
+    data class Resource(val resId: Int) : IconSource()
+    data class Text(val text: String) : IconSource()
+}
 
 // 症狀類型
 data class SymptomItem(
     val id: Int,
     val name: String,
-    val icon: String
+    val icon: IconSource
 )
 
 val SYMPTOM_LIST = listOf(
-    SymptomItem(1, "胸悶、胸痛", "🫀"),
-    SymptomItem(2, "頭暈", "😵"),
-    SymptomItem(3, "心悸", "💓"),
-    SymptomItem(4, "疲倦虛弱", "😫"),
-    SymptomItem(5, "心跳過快", "💗"),
-    SymptomItem(6, "呼吸急促", "😤")
+    SymptomItem(1, "胸悶、胸部疼痛", IconSource.Resource(R.drawable.ic_symptom_chest_pain)), 
+    SymptomItem(2, "暈眩", IconSource.Resource(R.drawable.ic_symptom_dizziness)),
+    SymptomItem(3, "心悸", IconSource.Resource(R.drawable.ic_symptom_palpitations)),
+    SymptomItem(4, "疲倦虛弱", IconSource.Resource(R.drawable.ic_symptom_fatigue)),
+    SymptomItem(5, "心跳過快", IconSource.Resource(R.drawable.ic_symptom_rapid_heartbeat)),
+    SymptomItem(6, "呼吸急促", IconSource.Resource(R.drawable.ic_symptom_shortness_of_breath))
 )
 
 // 運動強度
@@ -33,14 +44,14 @@ data class ExerciseItem(
     val id: Int,
     val name: String,
     val description: String,
-    val icon: String
+    val icon: IconSource
 )
 
 val EXERCISE_LIST = listOf(
-    ExerciseItem(3, "高強度運動", "跑步、騎自行車、有氧舞蹈等", "🏃"),
-    ExerciseItem(2, "中強度運動", "上下樓梯、正常行走等", "🚶"),
-    ExerciseItem(1, "輕度運動", "散步", "🧘"),
-    ExerciseItem(0, "靜態活動", "坐著、睡覺等", "🧘‍♂️")
+    ExerciseItem(3, "高強度運動", "跑步、騎自行車、有氧舞蹈等", IconSource.Resource(R.drawable.ic_exercise_high_intensity)),
+    ExerciseItem(2, "中強度運動", "上下樓梯、正常行走等", IconSource.Resource(R.drawable.ic_exercise_medium_intensity)),
+    ExerciseItem(1, "輕度運動", "散步", IconSource.Resource(R.drawable.ic_exercise_low_intensity)),
+    ExerciseItem(0, "靜態活動", "坐著、睡覺等", IconSource.Resource(R.drawable.ic_exercise_resting))
 )
 
 enum class TagFlowStep {
@@ -60,7 +71,8 @@ data class MainUiState(
     val selectedSymptoms: List<Int> = emptyList(),
     val otherSymptom: String = "",
     val selectedExercise: Int = -1,
-    val tagSaved: Boolean = false,
+    val hasUnsyncedTags: Boolean = false,
+    val showSyncErrorBadge: Boolean = false,
     val loginTimeDisplay: String = ""
 )
 
@@ -75,44 +87,125 @@ class MainViewModel : ViewModel() {
     var uiState by mutableStateOf(MainUiState())
         private set
 
+    private var isSyncing = false
+
     init {
         loadEventTags()
     }
 
     fun loadEventTags() {
         viewModelScope.launch {
-            val tags = repository.getLocalEventTags()
-            val lastTime = tags.firstOrNull()?.tagLocalTime
+            try {
+                val tags = repository.getLocalEventTags()
+                val unsyncedCount = tags.count { it.isEdit }
+                val lastTime = tags.firstOrNull()?.tagLocalTime
 
-            val loginTime = tokenManager.loginTime
-            val isMeasuring = tokenManager.isMeasuring
-            val loginTimeStr = if (loginTime > 0) {
-                SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault()).format(Date(loginTime))
-            } else {
-                "未知"
+                val loginTime = tokenManager.loginTime
+                val isMeasuring = tokenManager.isMeasuring
+                val loginTimeStr = if (loginTime > 0) {
+                    SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault()).format(Date(loginTime))
+                } else {
+                    "未知"
+                }
+
+                uiState = uiState.copy(
+                    eventTags = tags,
+                    hasUnsyncedTags = unsyncedCount > 0,
+                    showSyncErrorBadge = uiState.showSyncErrorBadge && unsyncedCount > 0,
+                    lastTagTime = lastTime,
+                    loginTimeDisplay = loginTimeStr,
+                    isMeasuring = isMeasuring
+                )
+
+                if (unsyncedCount > 0) {
+                    triggerAutoSync()
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, "Error loading event tags", e)
+                uiState = uiState.copy(error = "載入資料庫錯誤: ${e.message}")
             }
+        }
+    }
 
-            uiState = uiState.copy(
-                eventTags = tags,
-                lastTagTime = lastTime,
-                loginTimeDisplay = loginTimeStr,
-                isMeasuring = isMeasuring
-            )
+    private fun triggerAutoSync() {
+        if (isSyncing) return
+        
+        viewModelScope.launch {
+            try {
+                val unsynced = uiState.eventTags.filter { it.isEdit }
+                if (unsynced.isEmpty()) return@launch
+
+                isSyncing = true
+                Log.d(TAG, "Auto-sync: triggering upload for ${unsynced.size} tags")
+                val result = repository.uploadVirtualEventTags(unsynced)
+                if (result.isSuccess) {
+                    uiState = uiState.copy(showSyncErrorBadge = false)
+                    loadEventTags()
+                } else {
+                    val error = result.exceptionOrNull()
+                    if (error != null && isNetworkError(error)) {
+                        uiState = uiState.copy(showSyncErrorBadge = true)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Auto-sync failed: ${e.message}")
+                if (isNetworkError(e)) {
+                    uiState = uiState.copy(showSyncErrorBadge = true)
+                }
+            } finally {
+                isSyncing = false
+            }
+        }
+    }
+
+    private fun isNetworkError(t: Throwable): Boolean {
+        return t is java.net.UnknownHostException || 
+               t is java.net.ConnectException || 
+               t is java.net.SocketTimeoutException ||
+               t.message?.contains("Unable to resolve host", ignoreCase = true) == true
+    }
+
+    private var isCheckingStatus = false
+
+    fun checkRecordingStatus() {
+        if (isCheckingStatus) return
+        
+        viewModelScope.launch {
+            try {
+                isCheckingStatus = true
+                val institutionId = tokenManager.institutionId ?: ""
+                val patientId = tokenManager.patientId ?: ""
+                
+                if (institutionId.isNotEmpty() && patientId.isNotEmpty()) {
+                    val result = repository.getCurrentMeasurement(institutionId, patientId)
+                    val info = result.getOrNull()
+                    if (info != null) {
+                        val serverStatus = info.isMeasuring()
+                        if (uiState.isMeasuring != serverStatus) {
+                            uiState = uiState.copy(isMeasuring = serverStatus)
+                            tokenManager.isMeasuring = serverStatus
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "checkRecordingStatus failed: ${e.message}")
+            } finally {
+                isCheckingStatus = false
+            }
         }
     }
 
     // ---- Tag Flow ----
     fun onTagPressed() {
         val now = System.currentTimeMillis()
-        val formatter = SimpleDateFormat("yyyy/MM/dd, HH:mm:ss", Locale.getDefault())
+        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         uiState = uiState.copy(
             tagFlowStep = TagFlowStep.SYMPTOM_SELECTION,
             tagTime = now,
             tagTimeFormatted = formatter.format(Date(now)),
             selectedSymptoms = emptyList(),
             otherSymptom = "",
-            selectedExercise = -1,
-            tagSaved = false
+            selectedExercise = -1
         )
     }
 
@@ -141,7 +234,7 @@ class MainViewModel : ViewModel() {
 
     fun confirmTag() {
         viewModelScope.launch {
-            val formatter = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
             val entity = EventTagDbEntity(
                 id = "TAG-${System.currentTimeMillis()}",
                 tagTime = uiState.tagTime,
@@ -152,15 +245,25 @@ class MainViewModel : ViewModel() {
                 others = uiState.otherSymptom.takeIf { it.isNotBlank() },
                 exerciseIntensity = uiState.selectedExercise,
                 isRead = false,
-                isEdit = false
+                isEdit = true
             )
+            
             repository.saveEventTag(entity)
+            
             uiState = uiState.copy(
                 tagFlowStep = TagFlowStep.IDLE,
-                tagSaved = true,
                 lastTagTime = entity.tagLocalTime
             )
             loadEventTags()
+
+            // Try to upload immediately
+            Log.d(TAG, "Attempting auto-upload for new tag: ${entity.id}")
+            val uploadResult = repository.uploadVirtualEventTags(listOf(entity))
+            if (uploadResult.isSuccess) {
+                Log.i(TAG, "Auto-upload success")
+            } else {
+                Log.e(TAG, "Auto-upload failed: ${uploadResult.exceptionOrNull()?.message}")
+            }
         }
     }
 
@@ -178,22 +281,31 @@ class MainViewModel : ViewModel() {
 
     fun logout() {
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true)
-            Log.d(TAG, "=== Logout Start ===")
-            Log.d(TAG, "institutionId=${tokenManager.institutionId}, patientId=${tokenManager.patientId}")
-
-            // Refresh token before unsubscribe (in case it expired)
             try {
-                val tokenResult = ServiceLocator.repository.getToken()
-                Log.d(TAG, "Token refresh: success=${tokenResult.isSuccess}")
-            } catch (e: Exception) {
-                Log.e(TAG, "Token refresh failed: ${e.message}")
-            }
+                uiState = uiState.copy(isLoading = true)
+                Log.d(TAG, "=== Logout Start ===")
 
-            // Unsubscribe - always clears local data per API spec
-            repository.unsubscribePatient()
-            Log.d(TAG, "=== Logout Complete (local data cleared) ===")
-            uiState = uiState.copy(isLoading = false, logoutSuccess = true)
+                // Refresh token before unsubscribe
+                try {
+                    val tokenResult = ServiceLocator.repository.getToken()
+                    Log.d(TAG, "Token refresh: success=${tokenResult.isSuccess}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Token refresh failed: ${e.message}")
+                }
+
+                val result = repository.unsubscribePatient()
+                if (result.isSuccess) {
+                    Log.d(TAG, "=== Logout Complete (local data cleared) ===")
+                    uiState = uiState.copy(isLoading = false, logoutSuccess = true)
+                } else {
+                    val errorMsg = result.exceptionOrNull()?.message ?: "原因不明"
+                    Log.e(TAG, "=== Logout Failed: $errorMsg ===")
+                    uiState = uiState.copy(isLoading = false, error = "登出失敗：$errorMsg")
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, "Logout error", e)
+                uiState = uiState.copy(isLoading = false, error = "登出發生錯誤: ${e.message}")
+            }
         }
     }
 }

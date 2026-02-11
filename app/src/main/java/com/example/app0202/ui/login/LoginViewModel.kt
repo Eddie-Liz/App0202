@@ -34,8 +34,11 @@ class LoginViewModel : ViewModel() {
             uiState = uiState.copy(error = "請填寫 Account ID 和 ID Number")
             return
         }
+        viewModelScope.launch { performLogin() }
+    }
 
-        viewModelScope.launch {
+    private suspend fun performLogin() {
+        try {
             uiState = uiState.copy(isLoading = true, error = null, statusMessage = "取得 Token 中...")
             Log.d(TAG, "=== Login Start === institutionId=$institutionId, patientId=$patientId")
 
@@ -46,7 +49,7 @@ class LoginViewModel : ViewModel() {
                 val msg = "Token 取得失敗: ${tokenResult.exceptionOrNull()?.message}"
                 Log.e(TAG, msg)
                 uiState = uiState.copy(isLoading = false, error = msg)
-                return@launch
+                return
             }
 
             // Step 2: Auth Patient
@@ -57,7 +60,7 @@ class LoginViewModel : ViewModel() {
                 val msg = "登入失敗: ${authResult.exceptionOrNull()?.message}"
                 Log.e(TAG, msg)
                 uiState = uiState.copy(isLoading = false, error = msg)
-                return@launch
+                return
             }
 
             // Step 3: Get Current Measurement
@@ -70,30 +73,36 @@ class LoginViewModel : ViewModel() {
                 val msg = "量測資訊取得失敗: ${measureResult.exceptionOrNull()?.message}"
                 Log.e(TAG, msg)
                 uiState = uiState.copy(isLoading = false, error = msg)
-                return@launch
+                return
             }
 
             // Validation 1: isMeasuring?
             val isMeasuring = measurementInfo.isMeasuring()
             val now = System.currentTimeMillis()
             Log.d(TAG, "Measurement Check: state=${measurementInfo.state}, expectedEndTime=${measurementInfo.expectedEndTime}, now=$now")
-            Log.d(TAG, "Measurement Check: isMeasuring=$isMeasuring (state==0? ${measurementInfo.state == 0}, timeValid? ${measurementInfo.expectedEndTime != 0L && now < measurementInfo.expectedEndTime})")
             
             ServiceLocator.tokenManager.isMeasuring = isMeasuring
+            measurementInfo.deviceId?.let {
+                ServiceLocator.tokenManager.deviceId = it
+                Log.d(TAG, "Server deviceId saved: $it")
+            }
             
             if (!isMeasuring) {
-                Log.w(TAG, "User is not measuring (state=${measurementInfo.state}), continuing login to show status.")
+                val msg = "登入失敗：您現在並沒有在錄製中 (state=${measurementInfo.state})"
+                Log.w(TAG, msg)
+                // Block login if not measuring
+                repository.unsubscribePatient()
+                uiState = uiState.copy(isLoading = false, error = "您現在並沒有在錄製中，無法登入！")
+                return
             }
 
             // Validation 2: isVirtualTagMode?
             if (!measurementInfo.isVirtualTagMode()) {
                 val msg = "登入失敗：不支援此模式 (mode=${measurementInfo.mode})"
                 Log.w(TAG, msg)
-                repository.unsubscribePatient() // Always clears local data per API spec
-                Log.d(TAG, "Rejection: unsubscribed and cleared local data")
-                
+                repository.unsubscribePatient()
                 uiState = uiState.copy(isLoading = false, error = "此模式不支援 Android (僅限 VirtualTag)")
-                return@launch
+                return
             }
 
             // Step 4: Check Total History Count (API #4) & Fetch History (API #5)
@@ -101,25 +110,43 @@ class LoginViewModel : ViewModel() {
             val measureId = ServiceLocator.tokenManager.measureRecordId
             Log.d(TAG, "Step 4 measureId=$measureId")
             if (measureId != null) {
-                // Step 4a: Check total count first
                 val countResult = repository.getTotalHistoryCount(institutionId, patientId, measureId)
                 val totalRow = countResult.getOrNull() ?: 0
                 Log.d(TAG, "Step 4a totalHistoryCount: totalRow=$totalRow")
 
-                // Step 4b: Only fetch if there are records
                 if (totalRow > 0) {
                     uiState = uiState.copy(statusMessage = "下載 $totalRow 筆歷史標註...")
                     val fetchResult = repository.fetchAllEventTagHistory(institutionId, patientId, measureId)
                     Log.d(TAG, "Step 4b fetchHistory: saved=${fetchResult.getOrNull()} records")
-                } else {
-                    Log.d(TAG, "Step 4b: No history records, skipping download")
                 }
-            } else {
-                Log.w(TAG, "Warning: measureId is null, skipping history fetch")
             }
 
             Log.d(TAG, "=== Login Success ===")
             uiState = uiState.copy(isLoading = false, loginSuccess = true)
+        } catch (e: Throwable) {
+            Log.e(TAG, "FATAL CRASH during login flow", e)
+            uiState = uiState.copy(isLoading = false, error = "發生嚴重錯誤: ${e.message}")
+        }
+    }
+
+    fun forceLogin() {
+        viewModelScope.launch {
+            try {
+                uiState = uiState.copy(isLoading = true, error = null, statusMessage = "正在強制解除其他裝置綁定...")
+                Log.d(TAG, "=== Force Login Start === institutionId=$institutionId, patientId=$patientId")
+                
+                // Step 0: Force Unsubscribe
+                repository.unsubscribePatient(institutionId, patientId)
+                
+                // Add a small delay to allow server state to sync
+                kotlinx.coroutines.delay(1000)
+                
+                // Step 1: Proceed with normal login
+                performLogin()
+            } catch (e: Throwable) {
+                Log.e(TAG, "Force login failed", e)
+                uiState = uiState.copy(isLoading = false, error = "強制登入失敗: ${e.message}")
+            }
         }
     }
 }

@@ -31,12 +31,25 @@ fun AppNavigation(startDestination: String = "login") {
                 },
                 onViewHistory = {
                     navController.navigate("history")
+                },
+                onViewProfile = {
+                    navController.navigate("profile")
                 }
             )
         }
         composable("history") {
             HistoryScreen(
                 onBack = { navController.popBackStack() }
+            )
+        }
+        composable("profile") {
+            com.example.app0202.ui.profile.ProfileScreen(
+                onBack = { navController.popBackStack() },
+                onLogoutSuccess = {
+                    navController.navigate("login") {
+                        popUpTo("main") { inclusive = true }
+                    }
+                }
             )
         }
     }

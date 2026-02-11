@@ -1,13 +1,18 @@
 package com.example.app0202.ui.main
 
+import android.app.Activity
+import android.content.Intent
+import android.speech.RecognizerIntent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,14 +28,24 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.app0202.R
 import com.example.app0202.ui.theme.*
+import com.example.app0202.ui.history.HistoryScreen
 import kotlinx.coroutines.launch
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalContext
+import android.os.Vibrator
+import android.os.VibrationEffect
+import android.os.Build
+import android.content.Context
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,7 +53,8 @@ import java.util.*
 @Composable
 fun MainScreen(
     onLogout: () -> Unit,
-    onViewHistory: () -> Unit = {},
+    onViewHistory: () -> Unit,
+    onViewProfile: () -> Unit,
     viewModel: MainViewModel = viewModel()
 ) {
     val uiState = viewModel.uiState
@@ -56,16 +72,35 @@ fun MainScreen(
         }
     }
 
-    // Side drawer
+    // Speech Recognition Launcher
+    val speechRecognizerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            val spokenText = data?.get(0) ?: ""
+            if (spokenText.isNotBlank()) {
+                viewModel.setOtherSymptom(spokenText)
+            }
+        }
+    }
+
+    val startVoiceInput = {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "請點選麥克風後說出您的症狀")
+        }
+        speechRecognizerLauncher.launch(intent)
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            // ... (no changes here for now)
             ModalDrawerSheet(
                 modifier = Modifier.width(280.dp),
                 drawerContainerColor = Color(0xFF757575)
             ) {
-                // Drawer header
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -75,83 +110,80 @@ fun MainScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("系統設定", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        if (uiState.loginTimeDisplay.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "登入時間: ${uiState.loginTimeDisplay}",
-                                color = Color.LightGray,
-                                fontSize = 12.sp
-                            )
-                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                // Logout button
+                
+                // Personal Profile Item
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
                         .clickable {
                             scope.launch { drawerState.close() }
-                            viewModel.logout()
+                            onViewProfile()
                         },
-                    color = Color(0xFF9E9E9E),
-                    shape = RoundedCornerShape(4.dp)
+                    color = TagGoGreen,
+                    shape = RoundedCornerShape(4.dp),
+                    border = BorderStroke(2.dp, TagGoGreen)
                 ) {
                     Row(
                         modifier = Modifier.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("➡\uFE0F", fontSize = 18.sp)
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_menu_profile),
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("登出帳號", color = Color.White, fontSize = 16.sp)
+                        Text("個人資料", color = Color.White, fontSize = 16.sp)
                     }
                 }
             }
         }
     ) {
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) }
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                // Green toolbar
-                Box(
+        Box(modifier = Modifier.fillMaxSize()) {
+            Scaffold(
+                snackbarHost = { SnackbarHost(snackbarHostState) }
+            ) { paddingValues ->
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(TagGoGreen)
-                        .padding(vertical = 14.dp, horizontal = 16.dp)
+                        .fillMaxSize()
+                        .padding(paddingValues)
                 ) {
-                    IconButton(
-                        onClick = { scope.launch { drawerState.open() } },
-                        modifier = Modifier.align(Alignment.CenterStart)
+                    // Green toolbar
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(TagGoGreen)
+                            .padding(vertical = 14.dp, horizontal = 16.dp)
                     ) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
+                        IconButton(
+                            onClick = { scope.launch { drawerState.open() } },
+                            modifier = Modifier.align(Alignment.CenterStart)
+                        ) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
+                        }
+                        Text(
+                            text = "數位標註",
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
                     }
-                    Text(
-                        text = "數位標註",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
 
-                // Main content
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .background(Color(0xFFE0E0E0))
-                ) {
+                    // Main content
                     Column(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .background(Color(0xFFE8E8E8)), // Restored: Original Light Gray
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp)) // Shifted up
 
                         // Current time
                         val currentTime = remember { mutableStateOf("") }
@@ -161,106 +193,153 @@ fun MainScreen(
                                 val now = Date()
                                 currentTime.value = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now)
                                 currentDate.value = SimpleDateFormat("EEEE, MMMM d", Locale.ENGLISH).format(now)
+                                viewModel.checkRecordingStatus() 
+                                viewModel.loadEventTags() // Real-time sync status update
                                 kotlinx.coroutines.delay(1000)
                             }
                         }
 
                         Text(
                             text = currentTime.value,
-                            fontSize = 56.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontSize = 96.sp, // Even larger
+                            fontWeight = FontWeight.W300,
                             color = Color(0xFF424242)
                         )
                         Text(
                             text = currentDate.value,
-                            fontSize = 16.sp,
-                            color = Color(0xFF757575)
+                            fontSize = 24.sp, // Even larger
+                            color = Color(0xFF616161),
+                            modifier = Modifier.padding(top = 2.dp)
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         // Status text
                         Text(
                             text = if (uiState.isMeasuring) "按一下按鍵來標註事件" else "您現在並沒有在錄製中！",
-                            fontSize = 16.sp,
-                            color = if (uiState.isMeasuring) Color(0xFF616161) else TagGoRed,
-                            fontWeight = FontWeight.Medium
+                            fontSize = 24.sp,
+                            color = Color(0xFF757575), // Grey as per screenshot
+                            fontWeight = FontWeight.Bold
                         )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        // Tag button
+                        // Tag button with Pointer
                         TagButton(
                             isMeasuring = uiState.isMeasuring,
                             onClick = { viewModel.onTagPressed() }
                         )
 
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // Device Image - EXTREME SCALE
+                        Image(
+                            painter = painterResource(id = R.drawable.img_rooti_device),
+                            contentDescription = "Device",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .scale(1.2f),
+                            contentScale = ContentScale.Fit
+                        )
+
                         Spacer(modifier = Modifier.weight(1f))
                     }
-                }
 
-                // Bottom bar
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(TagGoBottomBar)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("上一次標註:", color = Color(0xFFBDBDBD), fontSize = 12.sp)
-                        Text(
-                            text = uiState.lastTagTime ?: "尚無紀錄",
-                            color = Color.White,
-                            fontSize = 14.sp
-                        )
-                    }
-                    Button(
-                        onClick = onViewHistory,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF757575)),
-                        shape = RoundedCornerShape(4.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)
+                    // Bottom bar (Footer)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF888888))
+                            .padding(horizontal = 20.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("查看", color = Color.White, fontSize = 14.sp)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("上一次標註:", color = Color(0xFFE0E0E0), fontSize = 14.sp)
+                            Text(
+                                text = uiState.lastTagTime ?: "尚無紀錄",
+                                color = Color.White,
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Box {
+                            Button(
+                                onClick = onViewHistory,
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)),
+                                shape = RoundedCornerShape(4.dp),
+                                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
+                            ) {
+                                Text("查看", color = Color.White, fontSize = 16.sp)
+                            }
+
+                            if (uiState.showSyncErrorBadge) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .align(Alignment.TopEnd)
+                                        .offset(x = 8.dp, y = (-8).dp)
+                                        .background(TagGoRed, CircleShape)
+                                        .border(2.dp, Color.White, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "!",
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
 
-    // Tag flow overlay
-    if (uiState.tagFlowStep != TagFlowStep.IDLE) {
-        TagFlowOverlay(viewModel = viewModel)
+
+            // Tag Flow Overlay
+            if (uiState.tagFlowStep != TagFlowStep.IDLE) {
+                TagFlowOverlay(
+                    viewModel = viewModel,
+                    onStartVoiceInput = startVoiceInput
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun TagButton(isMeasuring: Boolean, onClick: () -> Unit) {
     var isPressed by remember { mutableStateOf(false) }
+    var isFlashing by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val vibrator = remember { context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
 
     val ringColor by animateColorAsState(
         targetValue = when {
             !isMeasuring -> TagGoRed
-            isPressed -> TagGoDarkCyan
-            else -> TagGoCyan
+            isFlashing -> Color(0xFFB2EBF2) // Pulse to Light Cyan instead of White
+            isPressed -> Color(0xFF4DB6AC)
+            else -> Color(0xFF80DEEA)
         },
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = if (isFlashing) 50 else 200),
         label = "ringColor"
     )
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
+        targetValue = if (isPressed) 0.96f else 1f,
         label = "scale"
     )
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .size(180.dp)
+                .size(220.dp)
                 .scale(scale)
-                .shadow(if (isPressed) 12.dp else 6.dp, CircleShape)
+                .shadow(16.dp, CircleShape)
                 .clip(CircleShape)
                 .background(Color.White)
-                .border(8.dp, ringColor, CircleShape)
+                .border(16.dp, ringColor, CircleShape) // Thicker border
                 .pointerInput(isMeasuring) {
                     if (isMeasuring) {
                         detectTapGestures(
@@ -269,21 +348,58 @@ fun TagButton(isMeasuring: Boolean, onClick: () -> Unit) {
                                 tryAwaitRelease()
                                 isPressed = false
                             },
-                            onTap = { onClick() }
+                            onTap = {
+                                scope.launch {
+                                    // Sharper Triple Pulse: 200v - 100p - 200v - 100p - 400v
+                                    val pattern = longArrayOf(0, 200, 100, 200, 100, 400)
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+                                    } else {
+                                        vibrator.vibrate(pattern, -1)
+                                    }
+
+                                    // Synchronized Pulse Flash Animation (Sharper timing)
+                                    // 1st pulse
+                                    isFlashing = true
+                                    kotlinx.coroutines.delay(200)
+                                    isFlashing = false
+                                    kotlinx.coroutines.delay(100)
+
+                                    // 2nd pulse
+                                    isFlashing = true
+                                    kotlinx.coroutines.delay(200)
+                                    isFlashing = false
+                                    kotlinx.coroutines.delay(100)
+
+                                    // 3rd pulse (Shorter but solid)
+                                    isFlashing = true
+                                    kotlinx.coroutines.delay(400)
+                                    isFlashing = false
+
+                                    // Move to next step only AFTER the 1s sequence
+                                    onClick()
+                                }
+                            }
                         )
                     }
                 },
             contentAlignment = Alignment.Center
         ) {
-            // Tag icon
-            Text("📍", fontSize = 48.sp)
+            // Tag icon - EXTREME SIZE (180dp)
+            Image(
+                painter = painterResource(id = R.drawable.ic_tag_silhouette),
+                contentDescription = "Tag",
+                modifier = Modifier.size(180.dp),
+                contentScale = ContentScale.Fit
+            )
         }
 
-        // Pin triangle
+        // Pointer (Triangle)
         Box(
             modifier = Modifier
-                .width(20.dp)
-                .height(16.dp)
+                .width(30.dp)
+                .height(24.dp)
+                .offset(y = (-6).dp) // Slightly overlap the button
                 .background(
                     color = ringColor,
                     shape = TriangleShape
@@ -292,7 +408,6 @@ fun TagButton(isMeasuring: Boolean, onClick: () -> Unit) {
     }
 }
 
-// Simple triangle shape for the pin
 private val TriangleShape = object : androidx.compose.ui.graphics.Shape {
     override fun createOutline(
         size: androidx.compose.ui.geometry.Size,

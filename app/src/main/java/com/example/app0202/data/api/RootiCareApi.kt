@@ -7,7 +7,7 @@ import retrofit2.http.*
 
 interface RootiCareApi {
 
-    // API #2: Auth Patient (GET, no body)
+    // API #2: Auth Patient (Subscribe Patient MCT Events)
     @GET("/oauth/vendors/{institutionId}/patients/{patientId}")
     suspend fun authPatient(
         @Path("institutionId") institutionId: String,
@@ -39,37 +39,28 @@ interface RootiCareApi {
         @Query("pageNumber") pageNumber: Int
     ): Response<EventTagHistoryResponse>
 
-    // === Unsubscribe endpoints (trying multiple paths/methods) ===
+    // API #6: Unsubscribe Patient (Logout)
+    // Confirmed correct method: POST on the base patient path
+    @POST("/oauth/vendors/{institutionId}/patients/{patientId}")
+    suspend fun unsubscribePatient(
+        @Path("institutionId") institutionId: String,
+        @Path("patientId") patientId: String
+    ): Response<ResponseBody>
 
-    // Path A: POST /oauth/vendors/.../unsubscribe (per API doc)
+    // Fallback: POST .../unsubscribe (Standard in some docs)
     @POST("/oauth/vendors/{institutionId}/patients/{patientId}/unsubscribe")
-    suspend fun unsubscribeVendorPost(
+    suspend fun unsubscribePatientWithSuffix(
         @Path("institutionId") institutionId: String,
         @Path("patientId") patientId: String,
-        @Body body: Map<String, String> = emptyMap()
-    ): Response<ResponseBody>
+        @Body body: UnsubscribeRequest
+    ): Response<UnsubscribeResponse>
 
-    // Path B: PUT /oauth/vendors/.../unsubscribe
-    @PUT("/oauth/vendors/{institutionId}/patients/{patientId}/unsubscribe")
-    suspend fun unsubscribeVendorPut(
+    // API #7: Add Virtual Event Tags
+    @POST("/api/v1/institutions/{institutionId}/patients/{patientId}/measures/{measureId}/virtualTags")
+    suspend fun addVirtualEventTags(
         @Path("institutionId") institutionId: String,
         @Path("patientId") patientId: String,
-        @Body body: Map<String, String> = emptyMap()
-    ): Response<ResponseBody>
-
-    // Path C: PUT /api/v1/institutions/.../unsubscribe (old working path)
-    @PUT("/api/v1/institutions/{institutionId}/patients/{patientId}/unsubscribe")
-    suspend fun unsubscribeInstitutionPut(
-        @Path("institutionId") institutionId: String,
-        @Path("patientId") patientId: String,
-        @Body body: Map<String, String> = emptyMap()
-    ): Response<ResponseBody>
-
-    // Path D: POST /api/v1/institutions/.../unsubscribe
-    @POST("/api/v1/institutions/{institutionId}/patients/{patientId}/unsubscribe")
-    suspend fun unsubscribeInstitutionPost(
-        @Path("institutionId") institutionId: String,
-        @Path("patientId") patientId: String,
-        @Body body: Map<String, String> = emptyMap()
-    ): Response<ResponseBody>
+        @Path("measureId") measureId: String,
+        @Body body: AddVirtualTagsRequest
+    ): Response<AddVirtualTagsResponse>
 }

@@ -86,7 +86,7 @@ object ServiceLocator {
             appContext,
             AppDatabase::class.java,
             "rooticare_db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
 
         repository = RootiCareRepository(
             authApi = authApi,

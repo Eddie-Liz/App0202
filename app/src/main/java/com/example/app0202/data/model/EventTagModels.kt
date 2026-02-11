@@ -13,13 +13,13 @@ data class EventTagHistoryResponse(
 )
 
 data class VirtualTagEntity(
-    val tagId: String = "",
-    val tagTime: Long = 0L,
-    val exerciseIntensity: Int = 0,
+    val tagId: String? = null,
+    val tagTime: Long? = null,
+    val exerciseIntensity: Int? = null,
     val symptomTypes: SymptomTypes? = null
 )
 
 data class SymptomTypes(
-    val symptomTypes: List<Int> = emptyList(),
+    val symptomTypes: List<Int>? = null,
     val others: String? = null
 )

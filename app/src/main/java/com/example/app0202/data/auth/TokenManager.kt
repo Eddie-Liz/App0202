@@ -3,7 +3,7 @@ package com.example.app0202.data.auth
 import android.content.Context
 import android.content.SharedPreferences
 
-class TokenManager(context: Context) {
+class TokenManager(private val context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("rooticare_prefs", Context.MODE_PRIVATE)
 
@@ -34,6 +34,17 @@ class TokenManager(context: Context) {
             return id
         }
         set(value) = prefs.edit().putString(KEY_DEVICE_ID, value).apply()
+
+    var pushToken: String
+        get() {
+            var token = prefs.getString("push_token", null)
+            if (token == null) {
+                token = java.util.UUID.randomUUID().toString() // Generate fake push token for now
+                prefs.edit().putString("push_token", token).apply()
+            }
+            return token
+        }
+        set(value) = prefs.edit().putString("push_token", value).apply()
 
     var vendorName: String?
         get() = prefs.getString(KEY_VENDOR_NAME, null)
@@ -67,11 +78,23 @@ class TokenManager(context: Context) {
         get() = prefs.getBoolean(KEY_IS_MEASURING, false)
         set(value) = prefs.edit().putBoolean(KEY_IS_MEASURING, value).apply()
 
+    val appVersion: String
+        get() = try {
+            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            pInfo.versionName ?: "1.0.0"
+        } catch (e: Exception) {
+            "1.0.0"
+        }
+
     fun clearAll() {
         val deviceId = prefs.getString(KEY_DEVICE_ID, null)
+        val pushToken = prefs.getString("push_token", null)
         prefs.edit().clear().apply()
         if (deviceId != null) {
             prefs.edit().putString(KEY_DEVICE_ID, deviceId).apply()
+        }
+        if (pushToken != null) {
+            prefs.edit().putString("push_token", pushToken).apply()
         }
     }
 }

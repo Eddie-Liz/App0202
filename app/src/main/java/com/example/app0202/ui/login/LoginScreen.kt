@@ -151,12 +151,29 @@ fun LoginScreen(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = uiState.error,
-                        modifier = Modifier.padding(12.dp),
-                        color = Color(0xFFB71C1C),
-                        fontSize = 14.sp
-                    )
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = uiState.error,
+                            color = Color(0xFFB71C1C),
+                            fontSize = 14.sp
+                        )
+                        
+                        // Suggest Force Login if it's a conflict error
+                        if (uiState.error.contains("此病患已在其他裝置登入")) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { viewModel.forceLogin() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFB71C1C)
+                                ),
+                                modifier = Modifier.height(36.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text("強制登入 (解除其他裝置)", color = Color.White, fontSize = 12.sp)
+                            }
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }

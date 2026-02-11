@@ -1,21 +1,24 @@
 package com.example.app0202.data.model
 
 data class MeasurementInfo(
-    val measureRecordOid: Long = 0L,
-    val measureRecordId: String = "",
-    val mode: Int = 0,
-    val state: Int = 0,
-    val launchTime: Long = 0L,
-    val expectedEndTime: Long = 0L,
-    val deviceId: String = ""
+    val measureRecordOid: Long? = null,
+    val measureRecordId: String? = null,
+    val mode: Int? = null,
+    val state: Int? = null,
+    val launchTime: Long? = null,
+    val expectedEndTime: Long? = null,
+    val deviceId: String? = null
 ) {
     fun isMeasuring(): Boolean {
         val now = System.currentTimeMillis()
-        // If expectedEndTime is small (e.g. 10 digits), treat as seconds and convert to millis
-        val endTimeMillis = if (expectedEndTime < 100000000000L) expectedEndTime * 1000 else expectedEndTime
+        val s = state ?: -1
+        val et = expectedEndTime ?: 0L
         
-        return state == STATE_MEASURING
-            && expectedEndTime != 0L
+        // If expectedEndTime is small (e.g. 10 digits), treat as seconds and convert to millis
+        val endTimeMillis = if (et > 0 && et < 100000000000L) et * 1000 else et
+        
+        return s == STATE_MEASURING
+            && et != 0L
             && now < endTimeMillis
     }
 

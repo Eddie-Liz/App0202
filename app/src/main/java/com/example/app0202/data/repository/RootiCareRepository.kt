@@ -8,6 +8,7 @@ import com.example.app0202.data.auth.TokenManager
 import com.example.app0202.data.local.AppDatabase
 import com.example.app0202.data.local.EventTagDbEntity
 import com.example.app0202.data.model.*
+import retrofit2.Response
 import com.squareup.moshi.Moshi
 import java.text.SimpleDateFormat
 import java.util.*
@@ -47,41 +48,41 @@ class RootiCareRepository(
         }
     }
 
-    // ---- API #2: Auth Patient (GET, no body) ----
+    // ---- API #2: Auth Patient (GET, subscribes the device) ----
     suspend fun authPatient(institutionId: String, patientId: String): Result<AuthPatientResponse> {
         return try {
-            Log.d(TAG, "authPatient: GET /oauth/vendors/$institutionId/patients/$patientId")
+            Log.d(TAG, "authPatient (Standard): institutionId=$institutionId, patientId=$patientId")
+            
             val response = rootiCareApi.authPatient(institutionId, patientId)
             Log.d(TAG, "authPatient response code: ${response.code()}")
-
+            
             if (response.isSuccessful) {
                 val body = response.body()
-                Log.d(TAG, "authPatient response: vendorName=${body?.vendorName}, " +
-                        "subscribedBefore=${body?.subscribedBefore}")
+                Log.d(TAG, "authPatient response: vendorName=${body?.vendorName}, subscribedBefore=${body?.subscribedBefore}")
+                
+                // Robust check for subscribedBefore
+                val isSubscribed = when (val sb = body?.subscribedBefore) {
+                    is Boolean -> sb
+                    is String -> sb.equals("true", ignoreCase = true)
+                    else -> false
+                }
+                
+                if (isSubscribed) {
+                    val msg = "此病患已在其他裝置登入"
+                    Log.e(TAG, "authPatient: subscribedBefore=true")
+                    return Result.failure(Exception(msg))
+                }
 
                 if (body?.vendorName != null) {
-                    // Check subscribedBefore
-                    val isSubscribed = when (val sb = body.subscribedBefore) {
-                        is Boolean -> sb
-                        is String -> sb.equals("true", ignoreCase = true)
-                        else -> false
-                    }
-
-                    if (isSubscribed) {
-                        val msg = "此病患已在其他裝置登入"
-                        Log.e(TAG, "authPatient: subscribedBefore=true")
-                        Result.failure(Exception(msg))
-                    } else {
-                        tokenManager.institutionId = institutionId
-                        tokenManager.patientId = patientId
-                        tokenManager.vendorName = body.vendorName
-                        tokenManager.isLoggedIn = true
-                        tokenManager.loginTime = System.currentTimeMillis()
-                        Log.d(TAG, "authPatient success: vendorName=${body.vendorName}")
-                        Result.success(body)
-                    }
+                    tokenManager.institutionId = institutionId
+                    tokenManager.patientId = patientId
+                    tokenManager.vendorName = body.vendorName
+                    tokenManager.isLoggedIn = true
+                    tokenManager.loginTime = System.currentTimeMillis()
+                    Log.d(TAG, "authPatient success: vendorName=${body.vendorName}")
+                    Result.success(body)
                 } else {
-                    val msg = "登入失敗：無效的回應內容 (vendorName 為空)"
+                    val msg = "登入失敗：無效的回應內容"
                     Log.e(TAG, msg)
                     Result.failure(Exception(msg))
                 }
@@ -183,46 +184,89 @@ class RootiCareRepository(
     }
 
     // ---- API #6: Unsubscribe (Logout) ----
-    // 無論成功或失敗，都清除本地資料
-    suspend fun unsubscribePatient(): Result<Unit> {
-        val institutionId = tokenManager.institutionId ?: ""
-        val patientId = tokenManager.patientId ?: ""
+    suspend fun unsubscribePatient(
+        explicitInstitutionId: String? = null,
+        explicitPatientId: String? = null
+    ): Result<Unit> {
+        val institutionId = explicitInstitutionId ?: tokenManager.institutionId ?: ""
+        val patientId = explicitPatientId ?: tokenManager.patientId ?: ""
 
-        try {
-            if (institutionId.isNotEmpty() && patientId.isNotEmpty()) {
-                Log.d(TAG, "=== Unsubscribe Start: institutionId=$institutionId, patientId=$patientId ===")
-
-                // Try 4 combinations of method × path
-                val trials = listOf(
-                    "A: POST /oauth/vendors/" to suspend { rootiCareApi.unsubscribeVendorPost(institutionId, patientId) },
-                    "B: PUT  /oauth/vendors/" to suspend { rootiCareApi.unsubscribeVendorPut(institutionId, patientId) },
-                    "C: PUT  /api/v1/institutions/" to suspend { rootiCareApi.unsubscribeInstitutionPut(institutionId, patientId) },
-                    "D: POST /api/v1/institutions/" to suspend { rootiCareApi.unsubscribeInstitutionPost(institutionId, patientId) }
-                )
-
-                for ((name, call) in trials) {
-                    try {
-                        val resp = call()
-                        val body = try {
-                            if (resp.isSuccessful) resp.body()?.string() else resp.errorBody()?.string()
-                        } catch (_: Exception) { null }
-                        Log.d(TAG, "Unsub $name → code=${resp.code()}, body=${body?.take(200)}")
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Unsub $name → exception: ${e.message}")
-                    }
-                }
-            } else {
-                Log.w(TAG, "Unsubscribe: missing institutionId or patientId, skipping API call")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Unsubscribe exception (will still clear local data)", e)
-        } finally {
-            // 無論成功或失敗，都清除本地資料
-            Log.d(TAG, "Clearing local data (always, per API spec)")
+        if (institutionId.isEmpty() || patientId.isEmpty()) {
+            Log.w(TAG, "Unsubscribe: missing institutionId or patientId, clearing anyway")
             clearLocalData()
+            return Result.success(Unit)
         }
 
-        return Result.success(Unit)
+        return try {
+            // Strategy C (The confirmed winner): POST base path
+            Log.d(TAG, "Attempting Logout (Primary Strategy) - POST base path: inst=$institutionId, patient=$patientId")
+            val response = rootiCareApi.unsubscribePatient(institutionId, patientId)
+            
+            Log.d(TAG, "Logout result code: ${response.code()}")
+            
+            if (response.isSuccessful || response.code() == 204) {
+                Log.d(TAG, "Logout success, clearing local data.")
+            } else {
+                // Secondary Strategy: POST with /unsubscribe suffix
+                Log.d(TAG, "Primary failed (${response.code()}), trying fallback Strategy A (POST .../unsubscribe)")
+                val pushToken = tokenManager.pushToken
+                val request = UnsubscribeRequest(deviceToken = pushToken)
+                val fallbackResponse = rootiCareApi.unsubscribePatientWithSuffix(institutionId, patientId, request)
+                Log.d(TAG, "Fallback Strategy result: ${fallbackResponse.code()}")
+            }
+
+            // Always clear local data on user's logout intent
+            clearLocalData()
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Logout exception, clearing local anyway", e)
+            clearLocalData()
+            Result.success(Unit)
+        }
+    }
+
+    // ---- API #7: Upload Virtual Event Tags ----
+    suspend fun uploadVirtualEventTags(tags: List<EventTagDbEntity>): Result<AddVirtualTagsResponse> {
+        val institutionId = tokenManager.institutionId ?: ""
+        val patientId = tokenManager.patientId ?: ""
+        val measureId = tokenManager.measureRecordId ?: ""
+
+        if (institutionId.isEmpty() || patientId.isEmpty() || measureId.isEmpty()) {
+            return Result.failure(Exception("Missing required IDs for upload"))
+        }
+
+        return try {
+            val request = AddVirtualTagsRequest(
+                deviceUUID = tokenManager.deviceId,
+                appVersion = tokenManager.appVersion,
+                appType = 1, // Android
+                tags = tags.map { it.toVirtualTagRequest() }
+            )
+
+            val result = rootiCareApi.addVirtualEventTags(
+                institutionId = institutionId,
+                patientId = patientId,
+                measureId = measureId,
+                body = request
+            )
+
+            if (result.isSuccessful) {
+                val response = result.body()!!
+                // Mark as uploaded in local DB
+                val updatedTags = tags.map { it.copy(isEdit = false) }
+                database.eventTagDao().insertAll(updatedTags)
+                Result.success(response)
+            } else {
+                val errorBody = result.errorBody()?.string()
+                val apiError = parseError(errorBody)
+                Log.e(TAG, "Upload failed: $apiError")
+                Result.failure(Exception(apiError))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Upload exception", e)
+            Result.failure(e)
+        }
     }
 
     suspend fun clearLocalData() {
@@ -233,6 +277,10 @@ class RootiCareRepository(
     // ---- Local DB ----
     suspend fun getLocalEventTags(): List<EventTagDbEntity> {
         return database.eventTagDao().getAll()
+    }
+
+    suspend fun getUnsyncedCount(): Int {
+        return database.eventTagDao().getUnsyncedCount()
     }
 
     suspend fun saveEventTag(entity: EventTagDbEntity) {
@@ -258,17 +306,32 @@ class RootiCareRepository(
 
     private fun VirtualTagEntity.toDbEntity(measureId: String, measureMode: Int): EventTagDbEntity {
         val formatter = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+        val tt = tagTime ?: 0L
+        val ei = exerciseIntensity ?: 0
+        val symptoms = symptomTypes?.symptomTypes ?: emptyList()
+
         return EventTagDbEntity(
-            id = tagId,
-            tagTime = tagTime,
-            tagLocalTime = formatter.format(Date(tagTime)),
+            id = tagId ?: "TAG-${System.currentTimeMillis()}",
+            tagTime = tt,
+            tagLocalTime = if (tt > 0L) formatter.format(Date(tt)) else "Unknown",
             measureMode = measureMode,
             measureRecordId = measureId,
-            eventType = symptomTypes?.symptomTypes ?: emptyList(),
+            eventType = symptoms,
             others = symptomTypes?.others,
-            exerciseIntensity = exerciseIntensity,
+            exerciseIntensity = ei,
             isRead = true,
             isEdit = false
+        )
+    }
+
+    private fun EventTagDbEntity.toVirtualTagRequest(): VirtualTagRequest {
+        return VirtualTagRequest(
+            tagTime = tagTime,
+            exerciseIntensity = exerciseIntensity,
+            symptomTypes = SymptomTypes(
+                symptomTypes = eventType,
+                others = others
+            )
         )
     }
 }
