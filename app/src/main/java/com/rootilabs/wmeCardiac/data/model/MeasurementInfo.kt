@@ -1,0 +1,33 @@
+package com.rootilabs.wmeCardiac.data.model
+
+data class MeasurementInfo(
+    val measureRecordOid: Long? = null,
+    val measureRecordId: String? = null,
+    val mode: Int? = null,
+    val state: Int? = null,
+    val launchTime: Long? = null,
+    val expectedEndTime: Long? = null,
+    val deviceId: String? = null
+) {
+    fun isMeasuring(): Boolean {
+        val now = System.currentTimeMillis()
+        val s = state ?: -1
+        val et = expectedEndTime ?: 0L
+        
+        // If expectedEndTime is small (e.g. 10 digits), treat as seconds and convert to millis
+        val endTimeMillis = if (et > 0 && et < 100000000000L) et * 1000 else et
+        
+        return s == STATE_MEASURING
+            && et != 0L
+            && now < endTimeMillis
+    }
+
+    fun isVirtualTagMode(): Boolean = mode == MODE_VIRTUAL_TAG
+
+    companion object {
+        const val STATE_MEASURING = 0
+        const val MODE_VIRTUAL_TAG = 0  // Holter
+        const val MODE_MONITOR = 1
+        const val MODE_MCT_TAG = 2
+    }
+}

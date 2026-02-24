@@ -5,13 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.app0202"
-    compileSdk {
-        version = release(36)
-    }
+    namespace = "com.rootilabs.wmeCardiac"
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.app0202"
+        applicationId = "com.rootilabs.wmeCardiac"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

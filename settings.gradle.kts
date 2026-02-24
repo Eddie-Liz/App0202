@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "App0202"
+rootProject.name = "Android-Tag&Go"
 include(":app")
  
