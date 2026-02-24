@@ -8,6 +8,6 @@ class Converters {
         value?.joinToString(",")
 
     @TypeConverter
-    fun toIntList(value: String?): List<Int>? =
-        value?.takeIf { it.isNotEmpty() }?.split(",")?.mapNotNull { it.toIntOrNull() }
+    fun toIntList(value: String?): List<Int> =
+        value?.takeIf { it.isNotEmpty() }?.split(",")?.mapNotNull { it.toIntOrNull() } ?: emptyList()
 }
