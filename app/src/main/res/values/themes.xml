@@ -2,4 +2,12 @@
 <resources>
 
     <style name="Theme.TagGo" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.TagGo.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/transparent</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.TagGo</item>
+    </style>
+
 </resources>

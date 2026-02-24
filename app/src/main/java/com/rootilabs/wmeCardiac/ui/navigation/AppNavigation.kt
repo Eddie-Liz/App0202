@@ -9,7 +9,9 @@ import com.rootilabs.wmeCardiac.ui.login.LoginScreen
 import com.rootilabs.wmeCardiac.ui.main.MainScreen
 
 @Composable
-fun AppNavigation(startDestination: String = "login") {
+fun AppNavigation(
+    startDestination: String = "login",
+) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = startDestination) {
