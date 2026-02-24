@@ -25,11 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -109,7 +111,7 @@ fun MainScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("系統設定", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.system_settings), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -132,13 +134,13 @@ fun MainScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_menu_profile),
+                            painter = painterResource(id = R.drawable.profile_icon_normal),
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("個人資料", color = Color.White, fontSize = 16.sp)
+                        Text(stringResource(id = R.string.personal_profile), color = Color.White, fontSize = 16.sp)
                     }
                 }
             }
@@ -167,7 +169,7 @@ fun MainScreen(
                             Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
                         }
                         Text(
-                            text = "數位標註",
+                            text = stringResource(id = R.string.digital_tagging),
                             color = Color.White,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
@@ -183,8 +185,6 @@ fun MainScreen(
                             .background(Color(0xFFE8E8E8)), // Restored: Original Light Gray
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(modifier = Modifier.height(16.dp)) // Shifted up
-
                         // Current time
                         val currentTime = remember { mutableStateOf("") }
                         val currentDate = remember { mutableStateOf("") }
@@ -193,7 +193,7 @@ fun MainScreen(
                             while (true) {
                                 val now = Date()
                                 currentTime.value = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now)
-                                currentDate.value = SimpleDateFormat("EEEE, MMMM d", Locale.ENGLISH).format(now)
+                                currentDate.value = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(now)
                                 
                                 // Refresh status and sync tags every 10 seconds
                                 if (counter % 10 == 0) {
@@ -208,7 +208,7 @@ fun MainScreen(
 
                         Text(
                             text = currentTime.value,
-                            fontSize = 96.sp, // Even larger
+                            fontSize = 96.sp,
                             fontWeight = FontWeight.W300,
                             color = Color(0xFF424242)
                         )
@@ -219,33 +219,32 @@ fun MainScreen(
                             modifier = Modifier.padding(top = 2.dp)
                         )
 
-                        Spacer(modifier = Modifier.height(10.dp))
 
                         // Status text
                         Text(
-                            text = if (uiState.isMeasuring) "按一下按鍵來標註事件" else "您現在並沒有在錄製中！",
+                            text = if (uiState.isMeasuring) stringResource(id = R.string.tap_to_tag) else stringResource(id = R.string.no_recording),
                             fontSize = 24.sp,
                             color = Color(0xFF757575), // Grey as per screenshot
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         )
-
-                        Spacer(modifier = Modifier.height(16.dp))
 
                         // Tag button with Pointer
                         TagButton(
                             isMeasuring = uiState.isMeasuring,
-                            onClick = { viewModel.onTagPressed() }
+                            onClick = { viewModel.onTagPressed() },
+                            modifier = Modifier.offset(y = (-10).dp)
                         )
 
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Device Image - EXTREME SCALE
+                        // Device Image - 靠近按鈕尖角
                         Image(
-                            painter = painterResource(id = R.drawable.img_rooti_device),
+                            painter = painterResource(id = R.drawable.img_rx),
                             contentDescription = "Device",
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .scale(1.2f),
+                                .scale(1.2f)
+                                .offset(y = (-20).dp),
                             contentScale = ContentScale.Fit
                         )
 
@@ -261,9 +260,9 @@ fun MainScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("上一次標註:", color = Color(0xFFE0E0E0), fontSize = 14.sp)
+                            Text(stringResource(id = R.string.last_tag), color = Color(0xFFE0E0E0), fontSize = 14.sp)
                             Text(
-                                text = uiState.lastTagTime ?: "尚無紀錄",
+                                text = uiState.lastTagTime ?: stringResource(id = R.string.no_records),
                                 color = Color.White,
                                 fontSize = 17.sp,
                                 fontWeight = FontWeight.Bold
@@ -276,26 +275,18 @@ fun MainScreen(
                                 shape = RoundedCornerShape(4.dp),
                                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
                             ) {
-                                Text("查看", color = Color.White, fontSize = 16.sp)
+                                Text(stringResource(id = R.string.view), color = Color.White, fontSize = 16.sp)
                             }
 
                             if (uiState.showSyncErrorBadge) {
-                                Box(
+                                Image(
+                                    painter = painterResource(id = R.drawable.icon_warning2),
+                                    contentDescription = "Sync Error",
                                     modifier = Modifier
-                                        .size(24.dp)
+                                        .size(26.dp)
                                         .align(Alignment.TopEnd)
                                         .offset(x = 8.dp, y = (-8).dp)
-                                        .background(TagGoRed, CircleShape)
-                                        .border(2.dp, Color.White, CircleShape),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "!",
-                                        color = Color.White,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                                )
                             }
                         }
                     }
@@ -315,38 +306,53 @@ fun MainScreen(
 }
 
 @Composable
-fun TagButton(isMeasuring: Boolean, onClick: () -> Unit) {
+fun TagButton(isMeasuring: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     var isPressed by remember { mutableStateOf(false) }
     var isFlashing by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val vibrator = remember { context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
 
-    val ringColor by animateColorAsState(
-        targetValue = when {
-            !isMeasuring -> TagGoRed
-            isFlashing -> Color(0xFFB2EBF2) // Pulse to Light Cyan instead of White
-            isPressed -> Color(0xFF4DB6AC)
-            else -> Color(0xFF80DEEA)
-        },
-        animationSpec = androidx.compose.animation.core.tween(durationMillis = if (isFlashing) 50 else 200),
-        label = "ringColor"
-    )
-
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
+        targetValue = if (isPressed) 0.92f else 1f,
+        animationSpec = androidx.compose.animation.core.spring(
+            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy
+        ),
         label = "scale"
     )
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
+    val circleColor by animateColorAsState(
+        targetValue = if (isFlashing) Color(0xFFB2EBF2) else Color(0xFF80DEEA),
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = if (isFlashing) 50 else 100),
+        label = "circleColor"
+    )
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.size(300.dp)
+    ) {
+        // Blue circle - only shown when measuring, flashes on tap
+        if (isMeasuring) {
+            Box(
+                modifier = Modifier
+                    .size(200.dp)
+                    .background(circleColor, CircleShape)
+            )
+        }
+
+        // Main image - switches based on recording state
+        Image(
+            painter = painterResource(
+                id = when {
+                    !isMeasuring          -> R.drawable.btn_notready
+                    isPressed || isFlashing -> R.drawable.btn_pressed
+                    else                  -> R.drawable.btn_standby
+                }
+            ),
+            contentDescription = "Tag",
             modifier = Modifier
-                .size(220.dp)
+                .size(290.dp)
                 .scale(scale)
-                .shadow(16.dp, CircleShape)
-                .clip(CircleShape)
-                .background(Color.White)
-                .border(16.dp, ringColor, CircleShape) // Thicker border
                 .pointerInput(isMeasuring) {
                     if (isMeasuring) {
                         detectTapGestures(
@@ -358,7 +364,6 @@ fun TagButton(isMeasuring: Boolean, onClick: () -> Unit) {
                             onTap = {
                                 scope.launch {
                                     if (vibrator.hasVibrator()) {
-                                        // Sharper Triple Pulse: 200v - 100p - 200v - 100p - 400v
                                         val pattern = longArrayOf(0, 200, 100, 200, 100, 400)
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                             vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
@@ -368,52 +373,28 @@ fun TagButton(isMeasuring: Boolean, onClick: () -> Unit) {
                                         }
                                     }
 
-                                    // Synchronized Pulse Flash Animation (Sharper timing)
-                                    // 1st pulse
+                                    // Triple flash - only the blue circle
                                     isFlashing = true
                                     kotlinx.coroutines.delay(200)
                                     isFlashing = false
                                     kotlinx.coroutines.delay(100)
 
-                                    // 2nd pulse
                                     isFlashing = true
                                     kotlinx.coroutines.delay(200)
                                     isFlashing = false
                                     kotlinx.coroutines.delay(100)
 
-                                    // 3rd pulse (Shorter but solid)
                                     isFlashing = true
                                     kotlinx.coroutines.delay(400)
                                     isFlashing = false
 
-                                    // Move to next step only AFTER the 1s sequence
                                     onClick()
                                 }
                             }
                         )
                     }
                 },
-            contentAlignment = Alignment.Center
-        ) {
-            // Tag icon - EXTREME SIZE (180dp)
-            Image(
-                painter = painterResource(id = R.drawable.ic_tag_silhouette),
-                contentDescription = "Tag",
-                modifier = Modifier.size(180.dp),
-                contentScale = ContentScale.Fit
-            )
-        }
-
-        // Pointer (Triangle)
-        Box(
-            modifier = Modifier
-                .width(30.dp)
-                .height(24.dp)
-                .offset(y = (-6).dp) // Slightly overlap the button
-                .background(
-                    color = ringColor,
-                    shape = TriangleShape
-                )
+            contentScale = ContentScale.Fit
         )
     }
 }

@@ -18,6 +18,9 @@ class HistoryViewModel : ViewModel() {
     var isSyncing by mutableStateOf(false)
         private set
 
+    var uploadError by mutableStateOf<String?>(null)
+        private set
+
     init {
         loadTags()
     }
@@ -33,16 +36,20 @@ class HistoryViewModel : ViewModel() {
             val unsynced = tags.filter { it.isEdit }
             if (unsynced.isEmpty()) return@launch
 
+            uploadError = null
             try {
                 isSyncing = true
                 val result = repository.uploadVirtualEventTags(unsynced)
                 if (result.isSuccess) {
-                    loadTags() // Refresh UI
+                    uploadError = null
+                } else {
+                    uploadError = result.exceptionOrNull()?.message ?: "上傳失敗，請稍後再試"
                 }
             } catch (e: Exception) {
-                // Error handled by repository logging
+                uploadError = e.message ?: "上傳失敗，請稍後再試"
             } finally {
                 isSyncing = false
+                loadTags() // Always reload to reflect actual DB state
             }
         }
     }

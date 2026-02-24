@@ -1,0 +1,47 @@
+<resources>
+    <string name="welcome">Welkom</string>
+    <string name="login_description">Vul de gegevens in en log in</string>
+    <string name="account_id">Account-ID</string>
+    <string name="id_number">ID-nummer</string>
+    <string name="select_server">Selecteer server</string>
+    <string name="login">Inloggen</string>
+    <string name="logout">Uitloggen</string>
+    <string name="system_settings">Systeeminstellingen</string>
+    <string name="personal_profile">Persoonlijk profiel</string>
+    <string name="digital_tagging">Digitale tagging</string>
+    <string name="tagging_history">Tagging-geschiedenis</string>
+    <string name="last_tag">Laatste tag:</string>
+    <string name="view">Bekijken</string>
+    <string name="no_recording">Je bent momenteel niet aan het opnemen!</string>
+    <string name="tap_to_tag">Tik op de knop om een gebeurtenis te taggen</string>
+    <string name="retry_upload">Uploaden opnieuw proberen</string>
+    <string name="symptoms_title">1. Gevoelde symptomen</string>
+    <string name="intensity_title">2. Huidige intensiteit</string>
+    <string name="confirm_logout">Weet je zeker dat je wilt uitloggen?</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nee</string>
+    <string name="version">App-versie: %1$s</string>
+    <string name="other_symptom">Andere: %1$s</string>
+    <string name="no_records">Geen gegevens</string>
+    <string name="loading">Laden...</string>
+    <string name="error_occurred">Er is een fout opgetreden: %1$s</string>
+    
+    <!-- Symptoms -->
+    <string name="symptom_chest_pain">Pijn op de borst/benauwdheid</string>
+    <string name="symptom_dizziness">Duizeligheid</string>
+    <string name="symptom_palpitations">Hartkloppingen</string>
+    <string name="symptom_fatigue">Vermoeidheid/zwakte</string>
+    <string name="symptom_rapid_heartbeat">Snelle hartslag</string>
+    <string name="symptom_shortness_of_breath">Kortademigheid</string>
+    <string name="symptom_others">Andere (Voer andere symptomen in)</string>
+    
+    <!-- Intensity -->
+    <string name="intensity_high">Hoge intensiteit</string>
+    <string name="intensity_medium">Gemiddelde intensiteit</string>
+    <string name="intensity_low">Lage intensiteit</string>
+    <string name="intensity_resting">Rust</string>
+    <string name="intensity_high_desc">Hardlopen, fietsen, aerobics, enz.</string>
+    <string name="intensity_medium_desc">Trappen, normaal lopen, enz.</string>
+    <string name="intensity_low_desc">Wandelen</string>
+    <string name="intensity_resting_desc">Zitten, slapen, enz.</string>
+</resources>

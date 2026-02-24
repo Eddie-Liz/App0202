@@ -13,28 +13,40 @@ data class LoginUiState(
     val isLoading: Boolean = false,
     val loginSuccess: Boolean = false,
     val statusMessage: String = "",
-    val error: String? = null
+    val error: String? = null,
+    val showScanner: Boolean = false
 )
+
+enum class ServerRegion(val label: String, val url: String) {
+    AP("Asia-Pacific 1", "https://mct-api.rooticare.com"),
+    AP2("Asia-Pacific 2", "https://mct2-api.rooticare.com"),
+    EU("Europe", "https://mcteu-api.rooticare.com")
+}
 
 class LoginViewModel : ViewModel() {
     companion object {
         private const val TAG = "LoginViewModel"
     }
 
-    private val repository = ServiceLocator.repository
+    private val repository get() = ServiceLocator.repository
 
     var uiState by mutableStateOf(LoginUiState())
         private set
 
     var institutionId by mutableStateOf("")
     var patientId by mutableStateOf("")
+    var selectedServer by mutableStateOf(ServerRegion.AP)
 
     fun login() {
         if (institutionId.isBlank() || patientId.isBlank()) {
             uiState = uiState.copy(error = "請填寫 Account ID 和 ID Number")
             return
         }
-        viewModelScope.launch { performLogin() }
+        viewModelScope.launch {
+            // Switch server before login
+            ServiceLocator.reinitWithBaseUrl(selectedServer.url)
+            performLogin()
+        }
     }
 
     private suspend fun performLogin() {
@@ -129,24 +141,24 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    fun forceLogin() {
-        viewModelScope.launch {
-            try {
-                uiState = uiState.copy(isLoading = true, error = null, statusMessage = "正在強制解除其他裝置綁定...")
-                Log.d(TAG, "=== Force Login Start === institutionId=$institutionId, patientId=$patientId")
-                
-                // Step 0: Force Unsubscribe
-                repository.unsubscribePatient(institutionId, patientId)
-                
-                // Add a small delay to allow server state to sync
-                kotlinx.coroutines.delay(1000)
-                
-                // Step 1: Proceed with normal login
-                performLogin()
-            } catch (e: Throwable) {
-                Log.e(TAG, "Force login failed", e)
-                uiState = uiState.copy(isLoading = false, error = "強制登入失敗: ${e.message}")
-            }
+    fun onScanClicked() {
+        uiState = uiState.copy(showScanner = true)
+    }
+
+    fun onBarcodeScanned(barcode: String) {
+        // Assume format: institutionId,patientId or just institutionId
+        if (barcode.contains(",")) {
+            val parts = barcode.split(",")
+            institutionId = parts[0].trim()
+            if (parts.size > 1) patientId = parts[1].trim()
+        } else {
+            // If only one value, try to guess or just put it in institutionId
+            institutionId = barcode.trim()
         }
+        uiState = uiState.copy(showScanner = false)
+    }
+
+    fun onScannerDismissed() {
+        uiState = uiState.copy(showScanner = false)
     }
 }

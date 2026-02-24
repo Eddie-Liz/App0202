@@ -1,24 +1,36 @@
 package com.rootilabs.wmeCardiac.ui.login
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rootilabs.wmeCardiac.ui.theme.TagGoGreen
+
+import androidx.compose.ui.res.stringResource
+import com.rootilabs.wmeCardiac.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +42,17 @@ fun LoginScreen(
 
     LaunchedEffect(uiState.loginSuccess) {
         if (uiState.loginSuccess) onLoginSuccess()
+    }
+
+    if (uiState.showScanner) {
+        BarcodeScannerDialog(
+            onBarcodeScanned = { barcode ->
+                viewModel.onBarcodeScanned(barcode)
+            },
+            onDismiss = {
+                viewModel.onScannerDismissed()
+            }
+        )
     }
 
     Column(
@@ -46,7 +69,7 @@ fun LoginScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "歡迎",
+                text = stringResource(id = R.string.welcome),
                 color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -80,7 +103,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "請填寫資料並登入",
+                text = stringResource(id = R.string.login_description),
                 color = Color.White,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium
@@ -92,7 +115,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = viewModel.institutionId,
                 onValueChange = { viewModel.institutionId = it.trim() },
-                placeholder = { Text("Account ID", color = Color.Gray) },
+                placeholder = { Text(stringResource(id = R.string.account_id), color = Color.Gray) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
                 singleLine = true,
@@ -111,7 +134,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = viewModel.patientId,
                 onValueChange = { viewModel.patientId = it.trim() },
-                placeholder = { Text("ID Number", color = Color.Gray) },
+                placeholder = { Text(stringResource(id = R.string.id_number), color = Color.Gray) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
                 singleLine = true,
@@ -126,20 +149,108 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Region (static for now)
-            OutlinedTextField(
-                value = "Asia-Pacific",
-                onValueChange = { },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = false,
-                singleLine = true,
-                shape = RoundedCornerShape(8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledContainerColor = Color.White,
-                    disabledBorderColor = Color.Transparent,
-                    disabledTextColor = Color.DarkGray
-                )
+            // Server Region Dropdown — premium style
+            var serverDropdownExpanded by remember { mutableStateOf(false) }
+            val arrowRotation by animateFloatAsState(
+                targetValue = if (serverDropdownExpanded) 180f else 0f,
+                label = "arrow"
             )
+
+            ExposedDropdownMenuBox(
+                expanded = serverDropdownExpanded,
+                onExpandedChange = { if (!uiState.isLoading) serverDropdownExpanded = it }
+            ) {
+                // Trigger row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                        .shadow(2.dp, RoundedCornerShape(8.dp))
+                        .background(Color.White, RoundedCornerShape(8.dp))
+                        .padding(horizontal = 14.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = viewModel.selectedServer.label,
+                        fontSize = 16.sp,
+                        color = Color(0xFF212121),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = stringResource(id = R.string.select_server),
+                        tint = Color(0xFF9E9E9E),
+                        modifier = Modifier
+                            .size(22.dp)
+                            .rotate(arrowRotation)
+                    )
+                }
+
+                // Dropdown menu
+                ExposedDropdownMenu(
+                    expanded = serverDropdownExpanded,
+                    onDismissRequest = { serverDropdownExpanded = false },
+                    modifier = Modifier
+                        .background(Color.White)
+                        .shadow(8.dp, RoundedCornerShape(8.dp))
+                ) {
+                    ServerRegion.values().forEachIndexed { index, region ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = region.label,
+                                        fontSize = 15.sp,
+                                        color = if (region == viewModel.selectedServer)
+                                            TagGoGreen else Color(0xFF212121),
+                                        fontWeight = if (region == viewModel.selectedServer)
+                                            FontWeight.SemiBold else FontWeight.Normal,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    if (region == viewModel.selectedServer) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = TagGoGreen,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                            },
+                            onClick = {
+                                viewModel.selectedServer = region
+                                serverDropdownExpanded = false
+                            },
+                            modifier = Modifier.background(
+                                if (region == viewModel.selectedServer)
+                                    TagGoGreen.copy(alpha = 0.06f) else Color.Transparent
+                            )
+                        )
+                        if (index < ServerRegion.values().lastIndex) {
+                            HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 0.5.dp)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            // Scanner Button
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { 
+                        // Open scanner logic
+                        viewModel.onScanClicked()
+                    }
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.scan),
+                    contentDescription = "Scan QR/Barcode",
+                    modifier = Modifier.size(80.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -151,29 +262,12 @@ fun LoginScreen(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = uiState.error,
-                            color = Color(0xFFB71C1C),
-                            fontSize = 14.sp
-                        )
-                        
-                        // Suggest Force Login if it's a conflict error
-                        if (uiState.error.contains("此病患已在其他裝置登入")) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Button(
-                                onClick = { viewModel.forceLogin() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFB71C1C)
-                                ),
-                                modifier = Modifier.height(36.dp),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-                                shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Text("強制登入 (解除其他裝置)", color = Color.White, fontSize = 12.sp)
-                            }
-                        }
-                    }
+                    Text(
+                        text = uiState.error,
+                        color = Color(0xFFB71C1C),
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(12.dp)
+                    )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -209,7 +303,7 @@ fun LoginScreen(
                     disabledContainerColor = TagGoGreen.copy(alpha = 0.5f)
                 )
             ) {
-                Text("登入", fontSize = 18.sp, color = Color.White)
+                Text(stringResource(id = R.string.login), fontSize = 18.sp, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(32.dp))

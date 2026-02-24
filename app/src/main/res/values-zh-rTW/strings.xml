@@ -1,0 +1,62 @@
+<resources>
+    <string name="welcome">歡迎</string>
+    <string name="login_description">請填寫資料並登入</string>
+    <string name="account_id">Account ID</string>
+    <string name="id_number">ID Number</string>
+    <string name="select_server">選擇伺服器</string>
+    <string name="login">登入</string>
+    <string name="logout">登出</string>
+    <string name="system_settings">系統設定</string>
+    <string name="personal_profile">個人資料</string>
+    <string name="digital_tagging">數位標註</string>
+    <string name="tagging_history">標記紀錄</string>
+    <string name="last_tag">上一次標註:</string>
+    <string name="view">查看</string>
+    <string name="no_recording">您現在並沒有在錄製中！</string>
+    <string name="tap_to_tag">按一下按鍵來標註事件</string>
+    <string name="retry_upload">重新上傳</string>
+    <string name="symptoms_title">1. 您感受到的症狀</string>
+    <string name="intensity_title">2. 當下運動強度</string>
+    <string name="confirm_logout">您確定要登出應用程式？</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
+    <string name="version">Tag&amp;Go 應用程式版本: %1$s</string>
+    <string name="other_symptom">其他: %1$s</string>
+    <string name="no_records">尚無紀錄</string>
+    <string name="loading">載入中...</string>
+    <string name="error_occurred">發生錯誤: %1$s</string>
+    
+    <!-- Symptoms -->
+    <string name="symptom_chest_pain">胸悶、胸部疼痛</string>
+    <string name="symptom_dizziness">暈眩</string>
+    <string name="symptom_palpitations">心悸</string>
+    <string name="symptom_fatigue">疲倦虛弱</string>
+    <string name="symptom_rapid_heartbeat">心跳過快</string>
+    <string name="symptom_shortness_of_breath">呼吸急促</string>
+    <string name="symptom_others">其他(請輸入其他症狀)</string>
+    
+    <!-- Intensity -->
+    <string name="intensity_high">高強度運動</string>
+    <string name="intensity_medium">中強度運動</string>
+    <string name="intensity_low">輕度運動</string>
+    <string name="intensity_resting">靜態活動</string>
+    <string name="intensity_high_desc">跑步、騎自行車、有氧舞蹈等</string>
+    <string name="intensity_medium_desc">上下樓梯、正常行走等</string>
+    <string name="intensity_low_desc">散步</string>
+    <string name="intensity_resting_desc">坐著、睡覺等</string>
+    <string name="voice_prompt">請說出您的症狀...</string>
+    <string name="voice_input_hint">點擊右側麥克風語音輸入...</string>
+    <string name="voice_input">語音輸入</string>
+    <string name="tag_time_label">標註時間: %1$s</string>
+    <string name="cancel_tag">取消誤觸</string>
+    <string name="next_step">下一步</string>
+    <string name="confirm">確定</string>
+    <string name="no_symptoms_selected">尚未選擇任何症狀</string>
+    <string name="no_intensity_selected">尚未選擇運動強度</string>
+    <string name="edit">修改</string>
+    <string name="your_tags">您的標記</string>
+    <string name="no_symptoms_recorded">無記錄症狀</string>
+    <string name="no_intensity_recorded">無記錄強度</string>
+    <string name="back_desc">返回</string>
+    <string name="medical_clinic">醫療診所:</string>
+</resources>

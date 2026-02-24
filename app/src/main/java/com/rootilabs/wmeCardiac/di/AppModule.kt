@@ -42,9 +42,23 @@ object ServiceLocator {
         if (_instance != null) return
         _instance = this
         appContext = context.applicationContext
-
         tokenManager = TokenManager(appContext)
+        initApis(Constants.BASE_URL)
+        initDatabase()
+    }
 
+    fun reinitWithBaseUrl(baseUrl: String) {
+        initApis(baseUrl)
+        repository = RootiCareRepository(
+            authApi = authApi,
+            rootiCareApi = rootiCareApi,
+            tokenManager = tokenManager,
+            database = database,
+            moshi = moshi
+        )
+    }
+
+    private fun initApis(baseUrl: String) {
         moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
@@ -59,7 +73,7 @@ object ServiceLocator {
             .build()
 
         authApi = Retrofit.Builder()
-            .baseUrl(Constants.BASE_URL)
+            .baseUrl(baseUrl)
             .client(authClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
@@ -76,24 +90,27 @@ object ServiceLocator {
             .build()
 
         rootiCareApi = Retrofit.Builder()
-            .baseUrl(Constants.BASE_URL)
+            .baseUrl(baseUrl)
             .client(mainClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
             .create(RootiCareApi::class.java)
 
+        repository = RootiCareRepository(
+            authApi = authApi,
+            rootiCareApi = rootiCareApi,
+            tokenManager = tokenManager,
+            database = if (::database.isInitialized) database else initDatabase(),
+            moshi = moshi
+        )
+    }
+
+    private fun initDatabase(): AppDatabase {
         database = Room.databaseBuilder(
             appContext,
             AppDatabase::class.java,
             "rooticare_db"
         ).fallbackToDestructiveMigration().build()
-
-        repository = RootiCareRepository(
-            authApi = authApi,
-            rootiCareApi = rootiCareApi,
-            tokenManager = tokenManager,
-            database = database,
-            moshi = moshi
-        )
+        return database
     }
 }

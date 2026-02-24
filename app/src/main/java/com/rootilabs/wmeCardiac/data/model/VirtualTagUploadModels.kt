@@ -9,10 +9,16 @@ data class AddVirtualTagsRequest(
     val tags: List<VirtualTagRequest>
 )
 
+// Server expects symptomTypes as a nested object, not a plain array
+data class SymptomTypesPayload(
+    val symptomTypes: List<Int>? = null,
+    val others: String? = null
+)
+
 data class VirtualTagRequest(
     val tagTime: Long,
     val exerciseIntensity: Int,
-    val symptomTypes: SymptomTypes
+    val symptomTypes: SymptomTypesPayload? = null
 )
 
 data class AddVirtualTagsResponse(

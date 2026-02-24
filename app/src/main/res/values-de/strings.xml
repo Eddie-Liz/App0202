@@ -1,0 +1,47 @@
+<resources>
+    <string name="welcome">Willkommen</string>
+    <string name="login_description">Bitte füllen Sie die Details aus und melden Sie sich an</string>
+    <string name="account_id">Konto-ID</string>
+    <string name="id_number">ID-Nummer</string>
+    <string name="select_server">Server auswählen</string>
+    <string name="login">Anmelden</string>
+    <string name="logout">Abmelden</string>
+    <string name="system_settings">System-Einstellungen</string>
+    <string name="personal_profile">Persönliches Profil</string>
+    <string name="digital_tagging">Digitale Kennzeichnung</string>
+    <string name="tagging_history">Kennzeichnungsverlauf</string>
+    <string name="last_tag">Letzte Kennzeichnung:</string>
+    <string name="view">Ansehen</string>
+    <string name="no_recording">Sie nehmen derzeit nicht auf!</string>
+    <string name="tap_to_tag">Tippen Sie auf die Taste, um ein Ereignis zu kennzeichnen</string>
+    <string name="retry_upload">Upload erneut versuchen</string>
+    <string name="symptoms_title">1. Gefühlte Symptome</string>
+    <string name="intensity_title">2. Aktuelle Intensität</string>
+    <string name="confirm_logout">Sind Sie sicher, dass Sie sich abmelden möchten?</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nein</string>
+    <string name="version">App-Version: %1$s</string>
+    <string name="other_symptom">Andere: %1$s</string>
+    <string name="no_records">Keine Einträge</string>
+    <string name="loading">Laden...</string>
+    <string name="error_occurred">Ein Fehler ist aufgetreten: %1$s</string>
+    
+    <!-- Symptoms -->
+    <string name="symptom_chest_pain">Brustschmerzen/Engegefühl</string>
+    <string name="symptom_dizziness">Schwindel</string>
+    <string name="symptom_palpitations">Herzrasen</string>
+    <string name="symptom_fatigue">Müdigkeit/Schwäche</string>
+    <string name="symptom_rapid_heartbeat">Schneller Herzschlag</string>
+    <string name="symptom_shortness_of_breath">Atemnot</string>
+    <string name="symptom_others">Andere (Andere Symptome eingeben)</string>
+    
+    <!-- Intensity -->
+    <string name="intensity_high">Hohe Intensität</string>
+    <string name="intensity_medium">Mittlere Intensität</string>
+    <string name="intensity_low">Niedrige Intensität</string>
+    <string name="intensity_resting">Ruhe</string>
+    <string name="intensity_high_desc">Laufen, Radfahren, Aerobic usw.</string>
+    <string name="intensity_medium_desc">Treppen, normales Gehen usw.</string>
+    <string name="intensity_low_desc">Spaziergang</string>
+    <string name="intensity_resting_desc">Sitzen, Schlafen usw.</string>
+</resources>

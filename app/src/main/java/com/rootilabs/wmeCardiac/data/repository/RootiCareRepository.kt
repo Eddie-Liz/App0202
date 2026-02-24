@@ -59,19 +59,6 @@ class RootiCareRepository(
             if (response.isSuccessful) {
                 val body = response.body()
                 Log.d(TAG, "authPatient response: vendorName=${body?.vendorName}, subscribedBefore=${body?.subscribedBefore}")
-                
-                // Robust check for subscribedBefore
-                val isSubscribed = when (val sb = body?.subscribedBefore) {
-                    is Boolean -> sb
-                    is String -> sb.equals("true", ignoreCase = true)
-                    else -> false
-                }
-                
-                if (isSubscribed) {
-                    val msg = "此病患已在其他裝置登入"
-                    Log.e(TAG, "authPatient: subscribedBefore=true")
-                    return Result.failure(Exception(msg))
-                }
 
                 if (body?.vendorName != null) {
                     tokenManager.institutionId = institutionId
@@ -85,6 +72,39 @@ class RootiCareRepository(
                     val msg = "登入失敗：無效的回應內容"
                     Log.e(TAG, msg)
                     Result.failure(Exception(msg))
+                }
+            } else if (response.code() == 409) {
+                // Already subscribed on another device → auto unsubscribe & retry once
+                Log.w(TAG, "authPatient 409: patient already subscribed, auto-unsubscribing...")
+                unsubscribePatient(institutionId, patientId)
+                kotlinx.coroutines.delay(800)
+
+                val retryResponse = rootiCareApi.authPatient(institutionId, patientId)
+                Log.d(TAG, "authPatient retry response code: ${retryResponse.code()}")
+                if (retryResponse.isSuccessful) {
+                    val body = retryResponse.body()
+                    if (body?.vendorName != null) {
+                        tokenManager.institutionId = institutionId
+                        tokenManager.patientId = patientId
+                        tokenManager.vendorName = body.vendorName
+                        tokenManager.isLoggedIn = true
+                        tokenManager.loginTime = System.currentTimeMillis()
+                        Log.d(TAG, "authPatient retry success: vendorName=${body.vendorName}")
+                        // Re-fetch token after re-subscribing to avoid 401 on next API calls
+                        val tokenResult = getToken()
+                        if (tokenResult.isFailure) {
+                            Log.w(TAG, "Token refresh after 409 retry failed, proceeding anyway")
+                        } else {
+                            Log.d(TAG, "Token refreshed successfully after 409 retry")
+                        }
+                        Result.success(body)
+                    } else {
+                        Result.failure(Exception("登入失敗：無效的回應內容"))
+                    }
+                } else {
+                    val errorBody = retryResponse.errorBody()?.string()
+                    Log.e(TAG, "authPatient retry failed: HTTP ${retryResponse.code()} - $errorBody")
+                    Result.failure(Exception(parseError(errorBody)))
                 }
             } else {
                 val errorBody = response.errorBody()?.string()
@@ -253,14 +273,15 @@ class RootiCareRepository(
 
             if (result.isSuccessful) {
                 val response = result.body()!!
-                // Mark as uploaded in local DB
-                val updatedTags = tags.map { it.copy(isEdit = false) }
+                Log.d(TAG, "Upload success: addedSize=${response.addedSize}, failedSize=${response.failedSize}")
+                // Mark as uploaded in local DB — isEdit=false means synced, isRead=true hides resend icon
+                val updatedTags = tags.map { it.copy(isEdit = false, isRead = true) }
                 database.eventTagDao().insertAll(updatedTags)
                 Result.success(response)
             } else {
                 val errorBody = result.errorBody()?.string()
+                Log.e(TAG, "Upload failed: HTTP ${result.code()} - $errorBody")
                 val apiError = parseError(errorBody)
-                Log.e(TAG, "Upload failed: $apiError")
                 Result.failure(Exception(apiError))
             }
         } catch (e: Exception) {
@@ -305,10 +326,27 @@ class RootiCareRepository(
     }
 
     private fun VirtualTagEntity.toDbEntity(measureId: String, measureMode: Int): EventTagDbEntity {
+        // Standard Local Formatter (Taiwan TZ)
         val formatter = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
-        val tt = tagTime ?: 0L
+        
+        // Robust Timestamp Detection
+        val rawTime = tagTime ?: 0L
+        val serverMillis = if (rawTime > 0 && rawTime < 100000000000L) {
+            rawTime * 1000 // Server uses seconds
+        } else {
+            rawTime 
+        }
+
+        // The server likely sends 'Wall-Clock' time (Local Time).
+        // To maintain DB consistency as UTC, we subtract the current timezone offset.
+        val timezoneOffset = TimeZone.getDefault().getOffset(serverMillis)
+        val tt = serverMillis - timezoneOffset
+
         val ei = exerciseIntensity ?: 0
+        
+        // Use nested symptomTypes from history API
         val symptoms = symptomTypes?.symptomTypes ?: emptyList()
+        val symptomOthers = symptomTypes?.others
 
         return EventTagDbEntity(
             id = tagId ?: "TAG-${System.currentTimeMillis()}",
@@ -317,7 +355,7 @@ class RootiCareRepository(
             measureMode = measureMode,
             measureRecordId = measureId,
             eventType = symptoms,
-            others = symptomTypes?.others,
+            others = symptomOthers,
             exerciseIntensity = ei,
             isRead = true,
             isEdit = false
@@ -325,13 +363,23 @@ class RootiCareRepository(
     }
 
     private fun EventTagDbEntity.toVirtualTagRequest(): VirtualTagRequest {
-        return VirtualTagRequest(
-            tagTime = tagTime,
-            exerciseIntensity = exerciseIntensity,
-            symptomTypes = SymptomTypes(
-                symptomTypes = eventType,
+        // Capture the Wall-Clock time (UTC + Offset) before uploading in seconds.
+        // This ensures other devices (iOS) see the intended local time value.
+        val timezoneOffset = TimeZone.getDefault().getOffset(tagTime)
+        val wallClockSeconds = (tagTime + timezoneOffset) / 1000
+
+        // Server expects symptomTypes as a nested object: {"symptomTypes": [...], "others": "..."}
+        val symptomPayload = if (!eventType.isNullOrEmpty() || !others.isNullOrBlank()) {
+            SymptomTypesPayload(
+                symptomTypes = eventType?.takeIf { it.isNotEmpty() },
                 others = others
             )
+        } else null
+
+        return VirtualTagRequest(
+            tagTime = wallClockSeconds,
+            exerciseIntensity = exerciseIntensity,
+            symptomTypes = symptomPayload
         )
     }
 }

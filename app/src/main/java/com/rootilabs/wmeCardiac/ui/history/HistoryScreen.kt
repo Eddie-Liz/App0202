@@ -2,6 +2,7 @@ package com.rootilabs.wmeCardiac.ui.history
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,10 +25,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rootilabs.wmeCardiac.data.local.EventTagDbEntity
-import com.rootilabs.wmeCardiac.ui.main.EXERCISE_LIST
-import com.rootilabs.wmeCardiac.ui.main.SYMPTOM_LIST
-import com.rootilabs.wmeCardiac.ui.main.IconSource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.rootilabs.wmeCardiac.R
+import com.rootilabs.wmeCardiac.ui.main.exercises
+import com.rootilabs.wmeCardiac.ui.main.symptoms
+import com.rootilabs.wmeCardiac.ui.main.IconSource
 import com.rootilabs.wmeCardiac.ui.theme.TagGoGreen
 
 @Composable
@@ -37,6 +40,8 @@ fun HistoryScreen(
 ) {
     val tags = viewModel.tags
     val isSyncing = viewModel.isSyncing
+    val hasUnsynced = tags.any { it.isEdit }
+    val uploadError = viewModel.uploadError
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
         // Lime Green Header
@@ -58,13 +63,13 @@ fun HistoryScreen(
             ) {
                 Icon(
                     Icons.Default.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(id = R.string.back_desc),
                     tint = Color.White,
                     modifier = Modifier.size(20.dp)
                 )
             }
             Text(
-                text = "標記紀錄",
+                text = stringResource(id = R.string.tagging_history),
                 color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
@@ -79,7 +84,7 @@ fun HistoryScreen(
                 .padding(vertical = 8.dp, horizontal = 16.dp)
         ) {
             Text(
-                text = "您的標記",
+                text = stringResource(id = R.string.your_tags),
                 color = Color(0xFF616161),
                 fontSize = 18.sp
             )
@@ -92,16 +97,16 @@ fun HistoryScreen(
         ) {
             items(tags) { tag ->
                 HistoryRow(tag)
-                Divider(color = Color(0xFFE0E0E0))
+                HorizontalDivider(color = Color(0xFFE0E0E0))
             }
         }
 
         // Footer Button
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 32.dp, top = 16.dp),
-            contentAlignment = Alignment.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
                 onClick = { viewModel.retryUnsyncedTags() },
@@ -110,7 +115,7 @@ fun HistoryScreen(
                     .height(56.dp),
                 enabled = !isSyncing,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFD3D3D3), // Light grey
+                    containerColor = if (hasUnsynced) TagGoGreen else Color(0xFFD3D3D3),
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(8.dp)
@@ -119,11 +124,19 @@ fun HistoryScreen(
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
                 } else {
                     Text(
-                        text = "重新上傳",
+                        text = stringResource(id = R.string.retry_upload),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
+            }
+            uploadError?.let { error ->
+                Text(
+                    text = error,
+                    color = Color(0xFFE53935),
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
         }
     }
@@ -134,8 +147,8 @@ fun HistoryRow(tag: EventTagDbEntity) {
     var expanded by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
     
-    val exercise = EXERCISE_LIST.find { it.id == tag.exerciseIntensity }
-    val symptoms = SYMPTOM_LIST.filter { tag.eventType.contains(it.id) }
+    val exercise = exercises.find { it.id == tag.exerciseIntensity }
+    val selectedSymptoms = symptoms.filter { tag.eventType.contains(it.id) }
 
     Column(
         modifier = Modifier
@@ -155,6 +168,18 @@ fun HistoryRow(tag: EventTagDbEntity) {
                 color = Color(0xFF424242),
                 modifier = Modifier.weight(1f)
             )
+            if (!tag.isRead) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = com.rootilabs.wmeCardiac.R.drawable.icon_resend),
+                        contentDescription = stringResource(id = R.string.retry_upload),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
             Text(
                 text = "⌄",
                 fontSize = 34.sp,
@@ -172,7 +197,7 @@ fun HistoryRow(tag: EventTagDbEntity) {
                 // 1. Symptoms Section
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "1. 您感受到的症狀",
+                        text = stringResource(id = R.string.symptoms_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 32.sp,
                         color = Color(0xFF424242),
@@ -186,16 +211,16 @@ fun HistoryRow(tag: EventTagDbEntity) {
                             .padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        if (symptoms.isEmpty() && tag.others.isNullOrBlank()) {
-                            Text("無記錄症狀", color = Color.Gray, fontSize = 18.sp)
+                        if (selectedSymptoms.isEmpty() && tag.others.isNullOrBlank()) {
+                            Text(stringResource(id = R.string.no_symptoms_recorded), color = Color.Gray, fontSize = 18.sp)
                         } else {
-                            symptoms.forEach { symptom ->
-                                IconDetailRow(icon = symptom.icon, text = symptom.name)
+                            selectedSymptoms.forEach { symptom ->
+                                IconDetailRow(icon = symptom.icon, text = stringResource(id = symptom.labelResId))
                             }
                             if (!tag.others.isNullOrBlank()) {
                                 IconDetailRow(
-                                    icon = IconSource.Resource(com.rootilabs.wmeCardiac.R.drawable.ic_symptom_other),
-                                    text = "其他: ${tag.others}"
+                                    icon = IconSource.Resource(R.drawable.icon_others),
+                                    text = stringResource(id = R.string.other_symptom, tag.others)
                                 )
                             }
                         }
@@ -203,13 +228,13 @@ fun HistoryRow(tag: EventTagDbEntity) {
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-                Divider(color = Color(0xFFEEEEEE), thickness = 1.dp)
+                HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 1.dp)
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // 2. Exercise Section
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "2. 當下運動強度",
+                        text = stringResource(id = R.string.intensity_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 32.sp,
                         color = Color(0xFF424242),
@@ -223,9 +248,9 @@ fun HistoryRow(tag: EventTagDbEntity) {
                             .padding(12.dp)
                     ) {
                         if (exercise != null) {
-                            IconDetailRow(icon = exercise.icon, text = exercise.name)
+                            IconDetailRow(icon = exercise.icon, text = stringResource(id = exercise.labelResId))
                         } else {
-                            Text("無記錄強度", color = Color.Gray, fontSize = 18.sp)
+                            Text(stringResource(id = R.string.no_intensity_recorded), color = Color.Gray, fontSize = 18.sp)
                         }
                     }
                 }
@@ -256,10 +281,6 @@ fun IconDetailRow(icon: IconSource, text: String) {
                     contentDescription = null,
                     tint = Color.Unspecified,
                     modifier = Modifier.size(56.dp)
-                )
-                is IconSource.Text -> Text(
-                    text = icon.text,
-                    fontSize = 32.sp
                 )
             }
         }

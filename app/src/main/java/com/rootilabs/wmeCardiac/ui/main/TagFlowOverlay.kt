@@ -10,9 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -20,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,7 +52,7 @@ fun TagFlowOverlay(
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                val headerText = "您剛剛按了標註！"
+                val headerText = stringResource(id = R.string.tap_to_tag)
                 Text(headerText, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
                 if (uiState.tagFlowStep == TagFlowStep.CONFIRMATION) {
@@ -60,13 +60,13 @@ fun TagFlowOverlay(
                         onClick = { viewModel.cancelTagFlow() },
                         modifier = Modifier.align(Alignment.CenterEnd)
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                        Icon(Icons.Default.Close, contentDescription = stringResource(id = R.string.logout), tint = Color.White)
                     }
                 }
             }
 
             // Tag time section with dividers
-            Divider(color = Color(0xFFEEEEEE), thickness = 1.dp)
+            HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 1.dp)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -75,13 +75,13 @@ fun TagFlowOverlay(
                 contentAlignment = Alignment.CenterStart
             ) {
                 Text(
-                    text = "標註時間: ${uiState.tagTimeFormatted}",
+                    text = stringResource(id = R.string.tag_time_label, uiState.tagTimeFormatted),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF424242)
                 )
             }
-            Divider(color = Color(0xFFEEEEEE), thickness = 1.dp)
+            HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 1.dp)
 
             // Content based on step
             Box(modifier = Modifier.weight(1f)) {
@@ -105,7 +105,7 @@ private fun BoxScope.SymptomSelectionContent(
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
-            text = "1. 您感覺到甚麼症狀嗎？",
+            text = stringResource(id = R.string.symptoms_title),
             modifier = Modifier.padding(16.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 22.sp,
@@ -122,7 +122,7 @@ private fun BoxScope.SymptomSelectionContent(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                SYMPTOM_LIST.forEachIndexed { index, symptom ->
+                symptoms.forEachIndexed { index, symptom ->
                     val isSelected = uiState.selectedSymptoms.contains(symptom.id)
                     Row(
                         modifier = Modifier
@@ -145,13 +145,12 @@ private fun BoxScope.SymptomSelectionContent(
                                 tint = Color.Unspecified,
                                 modifier = Modifier.size(64.dp)
                             )
-                            is IconSource.Text -> Text(text = icon.text, fontSize = 32.sp, modifier = Modifier.size(64.dp).wrapContentSize(Alignment.Center))
                         }
 
                         Spacer(modifier = Modifier.width(16.dp))
                         
                         Text(
-                            text = symptom.name,
+                            text = stringResource(id = symptom.labelResId),
                             fontSize = 18.sp,
                             color = Color(0xFF424242),
                             modifier = Modifier.weight(1f)
@@ -167,11 +166,11 @@ private fun BoxScope.SymptomSelectionContent(
                         }
                     }
                     
-                    if (index < SYMPTOM_LIST.lastIndex) {
-                        Divider(color = Color(0xFFE0E0E0), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                    if (index < symptoms.lastIndex) {
+                        HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
                     }
                 }
-                Divider(color = Color(0xFFE0E0E0), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
             }
 
             // Other symptom
@@ -187,24 +186,24 @@ private fun BoxScope.SymptomSelectionContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_symptom_other),
+                        painter = painterResource(id = R.drawable.icon_others),
                         contentDescription = null,
                         tint = Color.Unspecified,
                         modifier = Modifier.size(28.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("其他(請輸入其他症狀)", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF424242))
+                Text(stringResource(id = R.string.symptom_others), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF424242))
             }
             OutlinedTextField(
                 value = uiState.otherSymptom,
                 onValueChange = { viewModel.setOtherSymptom(it) },
-                placeholder = { Text("點擊右側麥克風語音輸入...", color = Color.Gray, fontSize = 14.sp) },
+                placeholder = { Text(stringResource(id = R.string.voice_input_hint), color = Color.Gray, fontSize = 14.sp) },
                 trailingIcon = {
                     IconButton(onClick = onStartVoiceInput) {
                         Icon(
                             imageVector = Icons.Default.Mic,
-                            contentDescription = "Voice Input",
+                            contentDescription = stringResource(id = R.string.voice_input),
                             tint = TagGoGreen
                         )
                     }
@@ -224,8 +223,8 @@ private fun BoxScope.SymptomSelectionContent(
 
         // Bottom buttons
         TagFlowBottomButtons(
-            leftText = "取消誤觸",
-            rightText = "下一步",
+            leftText = stringResource(id = R.string.cancel_tag),
+            rightText = stringResource(id = R.string.next_step),
             rightEnabled = uiState.selectedSymptoms.isNotEmpty() || uiState.otherSymptom.isNotBlank(),
             onLeft = { viewModel.cancelTagFlow() },
             onRight = { viewModel.goToExerciseSelection() }
@@ -239,7 +238,7 @@ private fun BoxScope.ExerciseSelectionContent(viewModel: MainViewModel) {
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
-            text = "2. 您剛剛的運動強度是？",
+            text = stringResource(id = R.string.intensity_title),
             modifier = Modifier.padding(16.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 22.sp,
@@ -252,7 +251,7 @@ private fun BoxScope.ExerciseSelectionContent(viewModel: MainViewModel) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 12.dp)
         ) {
-            EXERCISE_LIST.forEach { exercise ->
+            exercises.forEach { exercise ->
                 val isSelected = uiState.selectedExercise == exercise.id
                 Surface(
                     modifier = Modifier
@@ -282,12 +281,11 @@ private fun BoxScope.ExerciseSelectionContent(viewModel: MainViewModel) {
                                 tint = Color.Unspecified,
                                 modifier = Modifier.size(64.dp)
                             )
-                            is IconSource.Text -> Text(text = icon.text, fontSize = 32.sp, modifier = Modifier.size(64.dp).wrapContentSize(Alignment.Center))
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(exercise.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF424242))
-                            Text(exercise.description, fontSize = 13.sp, color = Color(0xFF616161))
+                            Text(stringResource(id = exercise.labelResId), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF424242))
+                            Text(stringResource(id = exercise.descResId), fontSize = 13.sp, color = Color(0xFF616161))
                         }
                         if (isSelected) {
                             Icon(
@@ -303,8 +301,8 @@ private fun BoxScope.ExerciseSelectionContent(viewModel: MainViewModel) {
         }
 
         TagFlowBottomButtons(
-            leftText = "取消誤觸",
-            rightText = "確定",
+            leftText = stringResource(id = R.string.cancel_tag),
+            rightText = stringResource(id = R.string.confirm),
             rightEnabled = uiState.selectedExercise >= 0,
             onLeft = { viewModel.cancelTagFlow() },
             onRight = { viewModel.goToConfirmation() }
@@ -333,7 +331,7 @@ private fun BoxScope.ConfirmationContent(viewModel: MainViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "1. 您感受到的症狀",
+                    text = stringResource(id = R.string.symptoms_title),
                     fontWeight = FontWeight.Bold,
                     fontSize = 32.sp,
                     color = Color(0xFF424242),
@@ -349,25 +347,27 @@ private fun BoxScope.ConfirmationContent(viewModel: MainViewModel) {
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                val selectedSymptoms = SYMPTOM_LIST.filter { uiState.selectedSymptoms.contains(it.id) }
+                val selectedSymptoms = symptoms.filter { uiState.selectedSymptoms.contains(it.id) }
                 if (selectedSymptoms.isEmpty() && uiState.otherSymptom.isBlank()) {
-                    Text("尚未選擇任何症狀", color = Color.Gray, fontSize = 18.sp)
+                    Text(stringResource(id = R.string.no_symptoms_selected), color = Color.Gray, fontSize = 18.sp)
                 } else {
                     selectedSymptoms.forEach { symptom ->
-                        ConfirmationIconRow(icon = symptom.icon, text = symptom.name)
+                        ConfirmationIconRow(icon = symptom.icon, text = stringResource(id = symptom.labelResId))
                     }
                     if (uiState.otherSymptom.isNotBlank()) {
                         ConfirmationIconRow(
-                            icon = IconSource.Resource(R.drawable.ic_symptom_other),
-                            text = "其他: ${uiState.otherSymptom}"
+                            icon = IconSource.Resource(R.drawable.icon_others),
+                            text = stringResource(id = R.string.other_symptom, uiState.otherSymptom)
                         )
                     }
                 }
             }
         }
 
+        // ... rest of the file ...
+
         Spacer(modifier = Modifier.height(24.dp))
-        Divider(color = Color(0xFFEEEEEE), thickness = 1.dp)
+        HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 1.dp)
         Spacer(modifier = Modifier.height(24.dp))
 
         // 2. Exercise Section
@@ -380,7 +380,7 @@ private fun BoxScope.ConfirmationContent(viewModel: MainViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "2. 當下運動強度",
+                    text = stringResource(id = R.string.intensity_title),
                     fontWeight = FontWeight.Bold,
                     fontSize = 32.sp,
                     color = Color(0xFF424242),
@@ -395,23 +395,23 @@ private fun BoxScope.ConfirmationContent(viewModel: MainViewModel) {
                     .background(Color(0xFFF9F9F9), RoundedCornerShape(4.dp))
                     .padding(12.dp)
             ) {
-                val exercise = EXERCISE_LIST.find { it.id == uiState.selectedExercise }
+                val exercise = exercises.find { it.id == uiState.selectedExercise }
                 if (exercise == null) {
-                    Text("尚未選擇運動強度", color = Color.Gray, fontSize = 18.sp)
+                    Text(stringResource(id = R.string.no_intensity_selected), color = Color.Gray, fontSize = 18.sp)
                 } else {
-                    ConfirmationIconRow(icon = exercise.icon, text = exercise.name)
+                    ConfirmationIconRow(icon = exercise.icon, text = stringResource(id = exercise.labelResId))
                 }
             }
         }
         
         Spacer(modifier = Modifier.height(24.dp))
-        Divider(color = Color(0xFFEEEEEE), thickness = 1.dp)
+        HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 1.dp)
         
         Spacer(modifier = Modifier.height(40.dp))
 
         TagFlowBottomButtons(
-            leftText = "修改",
-            rightText = "傳送",
+            leftText = stringResource(id = R.string.edit),
+            rightText = stringResource(id = R.string.send),
             rightEnabled = true,
             onLeft = { viewModel.goBackToSymptoms() },
             onRight = { viewModel.confirmTag() }
@@ -484,10 +484,6 @@ private fun ConfirmationIconRow(icon: IconSource, text: String) {
                     contentDescription = null,
                     tint = Color.Unspecified,
                     modifier = Modifier.size(56.dp)
-                )
-                is IconSource.Text -> Text(
-                    text = icon.text,
-                    fontSize = 32.sp
                 )
             }
         }

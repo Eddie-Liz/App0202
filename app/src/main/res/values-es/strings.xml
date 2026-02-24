@@ -1,0 +1,47 @@
+<resources>
+    <string name="welcome">Bienvenido</string>
+    <string name="login_description">Complete los detalles e inicie sesión</string>
+    <string name="account_id">ID de cuenta</string>
+    <string name="id_number">Número de ID</string>
+    <string name="select_server">Seleccionar servidor</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="system_settings">Ajustes del sistema</string>
+    <string name="personal_profile">Perfil personal</string>
+    <string name="digital_tagging">Etiquetado digital</string>
+    <string name="tagging_history">Historial de etiquetas</string>
+    <string name="last_tag">Última etiqueta:</string>
+    <string name="view">Ver</string>
+    <string name="no_recording">¡No estás grabando actualmente!</string>
+    <string name="tap_to_tag">Toca el botón para etiquetar un evento</string>
+    <string name="retry_upload">Reintentar carga</string>
+    <string name="symptoms_title">1. Síntomas sentidos</string>
+    <string name="intensity_title">2. Intensidad actual</string>
+    <string name="confirm_logout">¿Estás seguro de que quieres cerrar sesión?</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+    <string name="version">Versión de la app: %1$s</string>
+    <string name="other_symptom">Otros: %1$s</string>
+    <string name="no_records">Sin registros</string>
+    <string name="loading">Cargando...</string>
+    <string name="error_occurred">Ocurrió un error: %1$s</string>
+    
+    <!-- Symptoms -->
+    <string name="symptom_chest_pain">Dolor/Opresión en el pecho</string>
+    <string name="symptom_dizziness">Mareos</string>
+    <string name="symptom_palpitations">Palpitaciones</string>
+    <string name="symptom_fatigue">Fatiga/Debilidad</string>
+    <string name="symptom_rapid_heartbeat">Latidos rápidos</string>
+    <string name="symptom_shortness_of_breath">Falta de aire</string>
+    <string name="symptom_others">Otros (Ingrese otros síntomas)</string>
+    
+    <!-- Intensity -->
+    <string name="intensity_high">Alta intensidad</string>
+    <string name="intensity_medium">Intensidad media</string>
+    <string name="intensity_low">Baja intensidad</string>
+    <string name="intensity_resting">Reposo</string>
+    <string name="intensity_high_desc">Correr, ciclismo, aeróbicos, etc.</string>
+    <string name="intensity_medium_desc">Escaleras, caminar normal, etc.</string>
+    <string name="intensity_low_desc">Paseo</string>
+    <string name="intensity_resting_desc">Sentado, durmiendo, etc.</string>
+</resources>

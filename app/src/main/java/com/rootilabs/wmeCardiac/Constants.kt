@@ -1,10 +1,13 @@
 package com.rootilabs.wmeCardiac
 
 object Constants {
-    // Production
-    const val BASE_URL = "https://api.rooticare.com"
-    // SIT (Testing) - 切換時取消下面的註解，並註解上面的
-    // const val BASE_URL = "https://192.168.103.17"
+    // Server regions
+    const val AP_API_URL  = "https://mct-api.rooticare.com"
+    const val AP2_API_URL = "https://mct2-api.rooticare.com"
+    const val EU_API_URL  = "https://mcteu-api.rooticare.com"
+
+    // Default
+    const val BASE_URL = AP_API_URL
 
     const val BASIC_AUTH = "Basic dVlqeHgzbGU0enM3U2lqQ3M1VW5tZHpHWGRZSmhKUEo6dVZNbVB4eE5MYzF2ckJUREtuU1daa2g1cmlJTHh2dEw="
 

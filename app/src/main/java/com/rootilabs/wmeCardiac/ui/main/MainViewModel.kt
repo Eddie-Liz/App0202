@@ -20,38 +20,37 @@ import androidx.compose.material.icons.filled.*
 sealed class IconSource {
     data class Vector(val imageVector: ImageVector) : IconSource()
     data class Resource(val resId: Int) : IconSource()
-    data class Text(val text: String) : IconSource()
 }
 
 // 症狀類型
 data class SymptomItem(
     val id: Int,
-    val name: String,
+    val labelResId: Int, // Changed from String to Int for resource ID
     val icon: IconSource
 )
 
-val SYMPTOM_LIST = listOf(
-    SymptomItem(1, "胸悶、胸部疼痛", IconSource.Resource(R.drawable.ic_symptom_chest_pain)), 
-    SymptomItem(2, "暈眩", IconSource.Resource(R.drawable.ic_symptom_dizziness)),
-    SymptomItem(3, "心悸", IconSource.Resource(R.drawable.ic_symptom_palpitations)),
-    SymptomItem(4, "疲倦虛弱", IconSource.Resource(R.drawable.ic_symptom_fatigue)),
-    SymptomItem(5, "心跳過快", IconSource.Resource(R.drawable.ic_symptom_rapid_heartbeat)),
-    SymptomItem(6, "呼吸急促", IconSource.Resource(R.drawable.ic_symptom_shortness_of_breath))
+val symptoms = listOf(
+    SymptomItem(1, R.string.symptom_chest_pain, IconSource.Resource(R.drawable.icon_chestpain)),
+    SymptomItem(2, R.string.symptom_dizziness, IconSource.Resource(R.drawable.icon_dizzy)),
+    SymptomItem(3, R.string.symptom_palpitations, IconSource.Resource(R.drawable.icon_palpitation)),
+    SymptomItem(4, R.string.symptom_fatigue, IconSource.Resource(R.drawable.icon_tired)),
+    SymptomItem(5, R.string.symptom_rapid_heartbeat, IconSource.Resource(R.drawable.icon_tachycardia)),
+    SymptomItem(6, R.string.symptom_shortness_of_breath, IconSource.Resource(R.drawable.icon_gasp))
 )
 
 // 運動強度
 data class ExerciseItem(
     val id: Int,
-    val name: String,
-    val description: String,
+    val labelResId: Int, // Changed from String to Int for resource ID
+    val descResId: Int,  // Changed from String to Int for resource ID
     val icon: IconSource
 )
 
-val EXERCISE_LIST = listOf(
-    ExerciseItem(3, "高強度運動", "跑步、騎自行車、有氧舞蹈等", IconSource.Resource(R.drawable.ic_exercise_high_intensity)),
-    ExerciseItem(2, "中強度運動", "上下樓梯、正常行走等", IconSource.Resource(R.drawable.ic_exercise_medium_intensity)),
-    ExerciseItem(1, "輕度運動", "散步", IconSource.Resource(R.drawable.ic_exercise_low_intensity)),
-    ExerciseItem(0, "靜態活動", "坐著、睡覺等", IconSource.Resource(R.drawable.ic_exercise_resting))
+val exercises = listOf(
+    ExerciseItem(3, R.string.intensity_high, R.string.intensity_high_desc, IconSource.Resource(R.drawable.icon_hi)),
+    ExerciseItem(2, R.string.intensity_medium, R.string.intensity_medium_desc, IconSource.Resource(R.drawable.icon_mid)),
+    ExerciseItem(1, R.string.intensity_low, R.string.intensity_low_desc, IconSource.Resource(R.drawable.icon_low)),
+    ExerciseItem(0, R.string.intensity_resting, R.string.intensity_resting_desc, IconSource.Resource(R.drawable.icon_idle))
 )
 
 enum class TagFlowStep {
@@ -197,12 +196,12 @@ class MainViewModel : ViewModel() {
 
     // ---- Tag Flow ----
     fun onTagPressed() {
-        val now = System.currentTimeMillis()
+        val now = System.currentTimeMillis() // Pure UTC
         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         uiState = uiState.copy(
             tagFlowStep = TagFlowStep.SYMPTOM_SELECTION,
             tagTime = now,
-            tagTimeFormatted = formatter.format(Date(now)),
+            tagTimeFormatted = formatter.format(Date(now)), // Local Taiwan Time
             selectedSymptoms = emptyList(),
             otherSymptom = "",
             selectedExercise = -1
@@ -235,13 +234,18 @@ class MainViewModel : ViewModel() {
     fun confirmTag() {
         viewModelScope.launch {
             val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            val symptoms = uiState.selectedSymptoms.toMutableList()
+            if (uiState.otherSymptom.isNotBlank() && !symptoms.contains(7)) {
+                symptoms.add(7)
+            }
+            
             val entity = EventTagDbEntity(
                 id = "TAG-${System.currentTimeMillis()}",
                 tagTime = uiState.tagTime,
                 tagLocalTime = formatter.format(Date(uiState.tagTime)),
                 measureMode = 0,
                 measureRecordId = tokenManager.measureRecordId ?: "",
-                eventType = uiState.selectedSymptoms,
+                eventType = symptoms,
                 others = uiState.otherSymptom.takeIf { it.isNotBlank() },
                 exerciseIntensity = uiState.selectedExercise,
                 isRead = false,

@@ -27,6 +27,8 @@ import com.rootilabs.wmeCardiac.R
 import com.rootilabs.wmeCardiac.di.ServiceLocator
 import com.rootilabs.wmeCardiac.ui.theme.TagGoGreen
 
+import androidx.compose.ui.res.stringResource
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -36,7 +38,12 @@ fun ProfileScreen(
 ) {
     val uiState = viewModel.uiState
     val tokenManager = ServiceLocator.tokenManager
-    val patientId = tokenManager.patientId ?: "---"
+    val rawPatientId = tokenManager.patientId ?: "---"
+    val displayedPatientId = if (rawPatientId.length >= 3) {
+        "xxx" + rawPatientId.substring(3)
+    } else {
+        rawPatientId
+    }
     val vendorName = tokenManager.vendorName ?: "---"
     
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -48,7 +55,7 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("個人資料", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(id = R.string.personal_profile), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = onBack) {
                         Surface(
@@ -58,7 +65,7 @@ fun ProfileScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Close",
+                                contentDescription = stringResource(id = R.string.back_desc),
                                 tint = Color.White,
                                 modifier = Modifier.padding(4.dp)
                             )
@@ -85,17 +92,17 @@ fun ProfileScreen(
             ) {
                 // ID Section
                 ProfileInfoItem(
-                    painter = painterResource(id = R.drawable.ic_profile_id_card),
-                    label = "ID Number:",
-                    value = patientId
+                    painter = painterResource(id = R.drawable.profile_icon_normal),
+                    label = stringResource(id = R.string.id_number),
+                    value = displayedPatientId
                 )
 
                 Spacer(modifier = Modifier.height(40.dp))
 
                 // Clinic Section
                 ProfileInfoItem(
-                    painter = painterResource(id = R.drawable.ic_profile_hospital),
-                    label = "醫療診所:",
+                    painter = painterResource(id = R.drawable.icon_symptom),
+                    label = stringResource(id = R.string.medical_clinic),
                     value = vendorName
                 )
 
@@ -114,7 +121,7 @@ fun ProfileScreen(
                     if (uiState.isLoading) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                     } else {
-                        Text("登出", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.logout), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -124,9 +131,9 @@ fun ProfileScreen(
                 }
 
                 Spacer(modifier = Modifier.height(60.dp))
-                // Version display at bottom as seen in screenshot
+                // Version display at bottom
                 Text(
-                    text = "Tag&Go 應用程式版本: 2.0.35",
+                    text = stringResource(id = R.string.version, "2.0.35"),
                     color = Color.Gray,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(bottom = 24.dp)
@@ -162,7 +169,7 @@ fun LogoutConfirmationDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "您確定要登出應用程式？",
+                    text = stringResource(id = R.string.confirm_logout),
                     fontSize = 18.sp,
                     color = Color(0xFF616161),
                     textAlign = TextAlign.Center,
@@ -179,7 +186,7 @@ fun LogoutConfirmationDialog(
                         shape = RoundedCornerShape(4.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = TagGoGreen)
                     ) {
-                        Text("否", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.no), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                     
                     Button(
@@ -188,7 +195,7 @@ fun LogoutConfirmationDialog(
                         shape = RoundedCornerShape(4.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = TagGoGreen)
                     ) {
-                        Text("是", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.yes), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
