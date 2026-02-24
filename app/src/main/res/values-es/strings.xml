@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="1_symptoms_you_feel">1. Síntomas que siente</string>
-    <string name="1_what_symptoms_are_you_feeling">1. ¿Qué síntomas está sintiendo?</string>
-    <string name="2_current_exercise_intensity">2. Intensidad de ejercicio actual</string>
-    <string name="2_how_intense_was_your_exercise_just_now">2. ¿Qué tan intenso fue su ejercicio?</string>
     <string name="account_id">ID de cuenta</string>
     <string name="cancel_tag">Cancelar etiqueta</string>
     <string name="check">Verificar</string>
@@ -21,6 +17,10 @@
     <string name="low_intensity_exercise">Ejercicio de baja intensidad</string>
     <string name="medical_clinic">Clínica Médica</string>
     <string name="moderate_intensity_exercise">Ejercicio de intensidad moderada</string>
+    <string name="n1_symptoms_you_feel">1. Síntomas que siente</string>
+    <string name="n1_what_symptoms_are_you_feeling">1. ¿Qué síntomas está sintiendo?</string>
+    <string name="n2_current_exercise_intensity">2. Intensidad de ejercicio actual</string>
+    <string name="n2_how_intense_was_your_exercise_just_now">2. ¿Qué tan intenso fue su ejercicio?</string>
     <string name="no_record">Sin registros</string>
     <string name="other_please_enter_other_symptoms">Otro (por favor ingrese otros síntomas)</string>
     <string name="please_select_exercise_intensity_before_tag">Por favor seleccione la intensidad de ejercicio antes de etiquetar</string>

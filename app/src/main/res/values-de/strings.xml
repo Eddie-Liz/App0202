@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="1_symptoms_you_feel">1. Symptome, die Sie verspüren</string>
-    <string name="1_what_symptoms_are_you_feeling">1. Welche Symptome verspüren Sie?</string>
-    <string name="2_current_exercise_intensity">2. Aktuelle Trainingsintensität</string>
-    <string name="2_how_intense_was_your_exercise_just_now">2. Wie intensiv war Ihr Training gerade?</string>
     <string name="account_id">Konto-ID</string>
     <string name="cancel_tag">Tag abbrechen</string>
     <string name="check">Überprüfen</string>
@@ -21,6 +17,10 @@
     <string name="low_intensity_exercise">Niedrigintensives Training</string>
     <string name="medical_clinic">Medizinische Klinik</string>
     <string name="moderate_intensity_exercise">Mittelintensives Training</string>
+    <string name="n1_symptoms_you_feel">1. Symptome, die Sie verspüren</string>
+    <string name="n1_what_symptoms_are_you_feeling">1. Welche Symptome verspüren Sie?</string>
+    <string name="n2_current_exercise_intensity">2. Aktuelle Trainingsintensität</string>
+    <string name="n2_how_intense_was_your_exercise_just_now">2. Wie intensiv war Ihr Training gerade?</string>
     <string name="no_record">Keine Aufzeichnung</string>
     <string name="other_please_enter_other_symptoms">Sonstiges (bitte andere Symptome eingeben)</string>
     <string name="please_select_exercise_intensity_before_tag">Bitte wählen Sie die Trainingsintensität vor dem Tag</string>

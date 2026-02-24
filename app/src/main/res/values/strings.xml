@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="1_symptoms_you_feel">1.Symptoms you feel</string>
-    <string name="1_what_symptoms_are_you_feeling">1. What symptoms are you feeling?</string>
-    <string name="2_current_exercise_intensity">2.Current exercise intensity</string>
-    <string name="2_how_intense_was_your_exercise_just_now">2. How intense was your exercise just now?</string>
     <string name="account_id">Account ID</string>
     <string name="app_name">Tag&amp;Go</string>
     <string name="cancel_tag">Cancel Tag</string>
@@ -16,13 +12,17 @@
     <string name="id_number">ID Number</string>
     <string name="invalid_institution_id_patient">Invalid Institution ID Patient</string>
     <string name="invalid_patient">Invalid Patient</string>
-    <string name="login_failed_due_to_you_re_not_in_measuring">Login failed, due to you're not in measuring.</string>
+    <string name="login_failed_due_to_you_re_not_in_measuring">Login failed, due to you\'re not in measuring.</string>
     <string name="login_failed_not_in_measuring">Login failed, due to you\'re not in measuring.</string>
     <string name="logout_failed">Logout failed</string>
     <string name="low_intensity_exercise">Low-intensity Exercise</string>
     <string name="medical_clinic">Medical Clinic</string>
     <string name="moderate_intensity_exercise">Moderate-intensity Exercise</string>
-    <string name="no_record">No Record</string>
+    <string name="n1_symptoms_you_feel">1.Symptoms you feel</string>
+    <string name="n1_what_symptoms_are_you_feeling">1. What symptoms are you feeling?</string>
+    <string name="n2_current_exercise_intensity">2.Current exercise intensity</string>
+    <string name="n2_how_intense_was_your_exercise_just_now">2. How intense was your exercise just now?</string>
+    <string name="no_record">No record</string>
     <string name="other_please_enter_other_symptoms">Other(please enter other symptoms)</string>
     <string name="please_select_exercise_intensity_before_tag">Please select Exercise Intensity before tag</string>
     <string name="please_select_symptom">Please select symptom</string>
@@ -50,8 +50,8 @@
     <string name="what_symptoms_are_you_feeling">1. What symptoms are you feeling?</string>
     <string name="you_are_not_currently_recording">You are not currently recording!</string>
     <string name="you_just_pressed_tag">You just pressed tag!</string>
-    <string name="you_still_have_data_not_uploaded_confirm_logout">You still have data that hasn’t been uploaded. Are you sure you want to log out?</string>
-    <string name="you_still_have_data_that_hasn_t_been_uploaded_are_you_sure_you_want_to_log_out">You still have data that hasn’t been uploaded. Are you sure you want to log out?</string>
+    <string name="you_still_have_data_not_uploaded_confirm_logout">You still have data that hasn\'t been uploaded. Are you sure you want to log out?</string>
+    <string name="you_still_have_data_that_hasn_t_been_uploaded_are_you_sure_you_want_to_log_out">You still have data that hasn\'t been uploaded. Are you sure you want to log out?</string>
     <string name="your_device_is_not_currently_recording">Your device is not currently recording, the event cannot be marked!</string>
     <string name="your_device_is_not_currently_recording_the_event_cannot_be_marked">Your device is not currently recording, the event cannot be marked!</string>
     <string name="your_tags">Your Tags</string>
