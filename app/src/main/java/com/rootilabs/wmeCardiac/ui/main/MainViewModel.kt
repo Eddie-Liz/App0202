@@ -32,10 +32,10 @@ data class SymptomItem(
 val symptoms = listOf(
     SymptomItem(1, R.string.symptom_chest_pain, IconSource.Resource(R.drawable.icon_chestpain)),
     SymptomItem(2, R.string.symptom_dizziness, IconSource.Resource(R.drawable.icon_dizzy)),
-    SymptomItem(3, R.string.symptom_palpitations, IconSource.Resource(R.drawable.icon_palpitation)),
+    SymptomItem(7, R.string.symptom_palpitations, IconSource.Resource(R.drawable.icon_palpitation)),  // iOS 使用 ID 7
     SymptomItem(4, R.string.symptom_fatigue, IconSource.Resource(R.drawable.icon_tired)),
     SymptomItem(5, R.string.symptom_rapid_heartbeat, IconSource.Resource(R.drawable.icon_tachycardia)),
-    SymptomItem(6, R.string.symptom_shortness_of_breath, IconSource.Resource(R.drawable.icon_gasp))
+    SymptomItem(9, R.string.symptom_shortness_of_breath, IconSource.Resource(R.drawable.icon_gasp))   // iOS 使用 ID 9
 )
 
 // 運動強度
@@ -235,8 +235,9 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
             val symptoms = uiState.selectedSymptoms.toMutableList()
-            if (uiState.otherSymptom.isNotBlank() && !symptoms.contains(7)) {
-                symptoms.add(7)
+            // iOS 使用 ID 27 代表「其他症狀」，Android 需要一致才能讓 iOS 正確顯示 others 文字
+            if (uiState.otherSymptom.isNotBlank() && !symptoms.contains(27)) {
+                symptoms.add(27)
             }
             
             val entity = EventTagDbEntity(
@@ -271,7 +272,16 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    var isVoiceInputActive: Boolean = false
+        private set
+
+    fun setVoiceInputActive(active: Boolean) {
+        isVoiceInputActive = active
+    }
+
     fun cancelTagFlow() {
+        // 語音辨識期間不要中斷 Tag Flow
+        if (isVoiceInputActive) return
         uiState = uiState.copy(tagFlowStep = TagFlowStep.IDLE)
     }
 

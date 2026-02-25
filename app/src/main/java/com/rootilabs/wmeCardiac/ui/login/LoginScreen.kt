@@ -61,19 +61,25 @@ fun LoginScreen(
             .background(Color(0xFF616161))
     ) {
         // Green toolbar
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(TagGoGreen)
-                .padding(vertical = 16.dp),
-            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = stringResource(id = R.string.welcome),
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Spacer(modifier = Modifier.statusBarsPadding())
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(id = R.string.welcome),
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         Column(
@@ -85,20 +91,11 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             // Avatar
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFBDBDBD)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "User",
-                    modifier = Modifier.size(60.dp),
-                    tint = Color.White
-                )
-            }
+            Image(
+                painter = painterResource(id = R.drawable.icon_patient),
+                contentDescription = "User",
+                modifier = Modifier.size(100.dp)
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -124,7 +121,9 @@ fun LoginScreen(
                     unfocusedContainerColor = Color.White,
                     focusedContainerColor = Color.White,
                     unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = TagGoGreen
+                    focusedBorderColor = TagGoGreen,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -143,7 +142,9 @@ fun LoginScreen(
                     unfocusedContainerColor = Color.White,
                     focusedContainerColor = Color.White,
                     unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = TagGoGreen
+                    focusedBorderColor = TagGoGreen,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -246,9 +247,10 @@ fun LoginScreen(
                     }
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.scan),
+                    painter = painterResource(id = R.drawable.qrcode_icon),
                     contentDescription = "Scan QR/Barcode",
-                    modifier = Modifier.size(80.dp)
+                    modifier = Modifier.size(120.dp),
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(androidx.compose.ui.graphics.Color.White)
                 )
             }
 

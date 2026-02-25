@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 // Tag&Go 品牌色
-val TagGoGreen = Color(0xFF8BC34A)
+val TagGoGreen = Color(0xFFADD14B)
 val TagGoDarkGreen = Color(0xFF689F38)
 val TagGoLightGreen = Color(0xFFC5E1A5)
 val TagGoCyan = Color(0xFF80CBC4)

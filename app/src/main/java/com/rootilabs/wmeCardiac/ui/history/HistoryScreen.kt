@@ -44,36 +44,40 @@ fun HistoryScreen(
     val uploadError = viewModel.uploadError
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
-        // Lime Green Header
+        // Shared Header Background (固定 56dp，與浮動按鈕完全對齊)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(TagGoGreen)
-                .statusBarsPadding()
-                .padding(vertical = 12.dp, horizontal = 16.dp),
-            contentAlignment = Alignment.Center
         ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .size(36.dp)
-                    .background(Color.Transparent, CircleShape)
-                    .border(2.dp, Color.White, CircleShape)
-            ) {
-                Icon(
-                    Icons.Default.ArrowBack,
-                    contentDescription = stringResource(id = R.string.back_desc),
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
+            Column {
+                Spacer(modifier = Modifier.statusBarsPadding())
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.btn_back_normal),
+                            contentDescription = stringResource(id = R.string.back_desc),
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    Text(
+                        text = stringResource(id = R.string.tagging_history),
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
-            Text(
-                text = stringResource(id = R.string.tagging_history),
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
         }
 
         // Subtitle section
@@ -149,6 +153,11 @@ fun HistoryRow(tag: EventTagDbEntity) {
     
     val exercise = exercises.find { it.id == tag.exerciseIntensity }
     val selectedSymptoms = symptoms.filter { tag.eventType.contains(it.id) }
+    // 找出在 Android 症狀列表中找不到的 ID（可能是 iOS 專屬 ID）
+    val unknownIds = tag.eventType.filter { id -> symptoms.none { it.id == id } && id != 27 }
+    if (unknownIds.isNotEmpty()) {
+        android.util.Log.d("HistoryScreen", "未知症狀 ID: $unknownIds (from eventType: ${tag.eventType})")
+    }
 
     Column(
         modifier = Modifier
@@ -180,11 +189,11 @@ fun HistoryRow(tag: EventTagDbEntity) {
                     )
                 }
             }
-            Text(
-                text = "⌄",
-                fontSize = 34.sp,
-                color = Color(0xFF757575),
-                modifier = Modifier.scale(scaleX = 1.2f, scaleY = 1f).rotate(rotation)
+            Icon(
+                painter = painterResource(id = if (expanded) R.drawable.arrow_up else R.drawable.arrow_down),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(24.dp)
             )
         }
 
@@ -197,7 +206,7 @@ fun HistoryRow(tag: EventTagDbEntity) {
                 // 1. Symptoms Section
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = stringResource(id = R.string.symptoms_title),
+                        text = stringResource(id = R.string.symptoms_label),
                         fontWeight = FontWeight.Bold,
                         fontSize = 32.sp,
                         color = Color(0xFF424242),
@@ -234,7 +243,7 @@ fun HistoryRow(tag: EventTagDbEntity) {
                 // 2. Exercise Section
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = stringResource(id = R.string.intensity_title),
+                        text = stringResource(id = R.string.intensity_label),
                         fontWeight = FontWeight.Bold,
                         fontSize = 32.sp,
                         color = Color(0xFF424242),
@@ -261,35 +270,11 @@ fun HistoryRow(tag: EventTagDbEntity) {
 
 @Composable
 fun IconDetailRow(icon: IconSource, text: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Text(
+        text = text,
+        fontSize = 22.sp,
+        color = Color(0xFF5B5B5B),
+        fontWeight = FontWeight.Thin,
         modifier = Modifier.fillMaxWidth()
-    ) {
-        Box(
-            modifier = Modifier.size(64.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            when (icon) {
-                is IconSource.Vector -> Icon(
-                    imageVector = icon.imageVector,
-                    contentDescription = null,
-                    tint = Color(0xFF757575),
-                    modifier = Modifier.size(56.dp)
-                )
-                is IconSource.Resource -> Icon(
-                    painter = painterResource(id = icon.resId),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(56.dp)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = text,
-            fontSize = 32.sp,
-            color = Color(0xFF424242),
-            fontWeight = FontWeight.Bold
-        )
-    }
+    )
 }

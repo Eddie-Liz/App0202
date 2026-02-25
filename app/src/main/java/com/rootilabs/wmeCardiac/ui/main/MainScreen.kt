@@ -6,12 +6,19 @@ import android.speech.RecognizerIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -40,6 +47,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rootilabs.wmeCardiac.R
 import com.rootilabs.wmeCardiac.ui.theme.*
 import com.rootilabs.wmeCardiac.ui.history.HistoryScreen
+import com.rootilabs.wmeCardiac.ui.profile.ProfileScreen
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import kotlinx.coroutines.launch
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -60,7 +72,8 @@ fun MainScreen(
     viewModel: MainViewModel = viewModel()
 ) {
     val uiState = viewModel.uiState
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    var isDrawerOpen by remember { mutableStateOf(false) }
+    var showProfile by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -78,6 +91,7 @@ fun MainScreen(
     val speechRecognizerLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
+        viewModel.setVoiceInputActive(false) // 語音結果回來，解除鎖定
         if (result.resultCode == Activity.RESULT_OK) {
             val data = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
             val spokenText = data?.get(0) ?: ""
@@ -88,6 +102,7 @@ fun MainScreen(
     }
 
     val startVoiceInput = {
+        viewModel.setVoiceInputActive(true) // 語音開始，鎖定 cancelTagFlow
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
@@ -96,214 +111,371 @@ fun MainScreen(
         speechRecognizerLauncher.launch(intent)
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.width(280.dp),
-                drawerContainerColor = Color(0xFF757575)
+    val drawerWidthDp = 280.dp
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val drawerWidthPx = with(density) { drawerWidthDp.toPx() }
+    val drawerOffsetPx = remember { Animatable(0f) }
+    // 同步 isDrawerOpen 狀態給遮罩使用
+    val isOpen = drawerOffsetPx.value > drawerWidthPx * 0.5f
+
+    // 個人資料關閉後，重置抽屜位置
+    LaunchedEffect(showProfile) {
+        if (!showProfile) {
+            drawerOffsetPx.snapTo(0f)
+            isDrawerOpen = false
+        }
+    }
+
+    // 最外層：讓個人資料可以覆蓋在上方
+    Box(modifier = Modifier.fillMaxSize()) {
+
+    // Push Drawer 外層容器
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFDFE0DF))) {
+
+        // ── 抽屜面板（固定在左側）──
+        Column(
+            modifier = Modifier
+                .width(drawerWidthDp)
+                .fillMaxHeight()
+                .background(Color(0xFF7C7C7C))
+        ) {
+            // 抽屜標題列
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF7C7C7C))
+                    .statusBarsPadding()
+                    .height(56.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF616161))
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(stringResource(id = R.string.system_settings), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // Personal Profile Item
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                        .clickable {
-                            scope.launch { drawerState.close() }
-                            onViewProfile()
-                        },
-                    color = TagGoGreen,
-                    shape = RoundedCornerShape(4.dp),
-                    border = BorderStroke(2.dp, TagGoGreen)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                Text(
+                    text = stringResource(id = R.string.system_settings),
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            // 個人資料選項（全寬，正常高度）
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(com.rootilabs.wmeCardiac.ui.theme.TagGoGreen)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.profile_icon_normal),
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(id = R.string.personal_profile), color = Color.White, fontSize = 16.sp)
+                        showProfile = true
                     }
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.profile_icon_normal),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(id = R.string.personal_profile),
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
                 }
             }
+
         }
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Scaffold(
-                snackbarHost = { SnackbarHost(snackbarHostState) }
-            ) { paddingValues ->
-                Column(
+
+        // ── 主畫面（往右推，隨手指即時移動）──
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .offset { androidx.compose.ui.unit.IntOffset(drawerOffsetPx.value.toInt(), 0) }
+                .draggable(
+                    orientation = Orientation.Horizontal,
+                    state = rememberDraggableState { delta ->
+                        val newOffset = (drawerOffsetPx.value + delta)
+                            .coerceIn(0f, drawerWidthPx)
+                        scope.launch { drawerOffsetPx.snapTo(newOffset) }
+                    },
+                    onDragStopped = {
+                        scope.launch {
+                            val target = if (drawerOffsetPx.value > drawerWidthPx * 0.4f)
+                                drawerWidthPx else 0f
+                            drawerOffsetPx.animateTo(
+                                target,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                )
+                            )
+                            isDrawerOpen = target > 0f
+                        }
+                    }
+                )
+        ) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            contentWindowInsets = WindowInsets(0, 0, 0, 0)
+        ) { paddingValues ->
+                val tagFlowOpen = uiState.tagFlowStep != TagFlowStep.IDLE
+                val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                val density = androidx.compose.ui.platform.LocalDensity.current
+
+                BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
+                        .background(Color.Black)
                 ) {
-                    // Green toolbar
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(TagGoGreen)
-                            .padding(vertical = 14.dp, horizontal = 16.dp)
-                    ) {
-                        IconButton(
-                            onClick = { scope.launch { drawerState.open() } },
-                            modifier = Modifier.align(Alignment.CenterStart)
-                        ) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
+                    val fullHeightPx = with(density) { maxHeight.toPx() }
+
+                    // Linear progress calculation based on sheet offset and screen height
+                    val progress by remember(tagFlowOpen) {
+                        derivedStateOf {
+                            if (!tagFlowOpen) 0f
+                            else {
+                                val offset = try { sheetState.requireOffset() } catch (e: Exception) { fullHeightPx }
+                                val p = 1f - (offset / fullHeightPx).coerceIn(0f, 1f)
+                                (p / 0.92f).coerceIn(0f, 1f)
+                            }
                         }
-                        Text(
-                            text = stringResource(id = R.string.digital_tagging),
-                            color = Color.White,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
                     }
 
-                    // Main content
+                    val mainScale = 1f - (0.10f * progress)
+                    val mainOffset = (5.dp.value * progress).dp
+
                     Column(
                         modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .background(Color(0xFFE8E8E8)), // Restored: Original Light Gray
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .fillMaxSize()
+                            .offset(y = mainOffset)
+                            .scale(mainScale)
+                            .clip(
+                                if (tagFlowOpen)
+                                    androidx.compose.foundation.shape.RoundedCornerShape((24 * progress).dp)
+                                else
+                                    androidx.compose.ui.graphics.RectangleShape
+                            )
                     ) {
-                        // Current time
-                        val currentTime = remember { mutableStateOf("") }
-                        val currentDate = remember { mutableStateOf("") }
-                        LaunchedEffect(Unit) {
-                            var counter = 0
-                            while (true) {
-                                val now = Date()
-                                currentTime.value = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now)
-                                currentDate.value = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(now)
-                                
-                                // Refresh status and sync tags every 10 seconds
-                                if (counter % 10 == 0) {
-                                    viewModel.checkRecordingStatus() 
-                                    viewModel.loadEventTags() // Sync status update
-                                }
-                                
-                                counter++
-                                kotlinx.coroutines.delay(1000)
-                            }
-                        }
-
-                        Text(
-                            text = currentTime.value,
-                            fontSize = 96.sp,
-                            fontWeight = FontWeight.W300,
-                            color = Color(0xFF424242)
-                        )
-                        Text(
-                            text = currentDate.value,
-                            fontSize = 24.sp, // Even larger
-                            color = Color(0xFF616161),
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-
-
-                        // Status text
-                        Text(
-                            text = if (uiState.isMeasuring) stringResource(id = R.string.tap_to_tag) else stringResource(id = R.string.no_recording),
-                            fontSize = 24.sp,
-                            color = Color(0xFF757575), // Grey as per screenshot
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-
-                        // Tag button with Pointer
-                        TagButton(
-                            isMeasuring = uiState.isMeasuring,
-                            onClick = { viewModel.onTagPressed() },
-                            modifier = Modifier.offset(y = (-10).dp)
-                        )
-
-                        // Device Image - 靠近按鈕尖角
-                        Image(
-                            painter = painterResource(id = R.drawable.img_rx),
-                            contentDescription = "Device",
+                        // Green Header (按鈕在這裡，跟著縮放動畫一起移動)
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .scale(1.2f)
-                                .offset(y = (-20).dp),
-                            contentScale = ContentScale.Fit
-                        )
-
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-
-                    // Bottom bar (Footer)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF888888))
-                            .padding(horizontal = 20.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(id = R.string.last_tag), color = Color(0xFFE0E0E0), fontSize = 14.sp)
-                            Text(
-                                text = uiState.lastTagTime ?: stringResource(id = R.string.no_records),
-                                color = Color.White,
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                                .background(TagGoGreen)
+                        ) {
+                            Column {
+                                Spacer(modifier = Modifier.statusBarsPadding())
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(56.dp)
+                                        .padding(horizontal = 16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    // 選單按鈕（左側）
+                                    IconButton(
+                                        onClick = {
+                                            scope.launch {
+                                                drawerOffsetPx.animateTo(
+                                                    drawerWidthPx,
+                                                    animationSpec = spring(
+                                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                                        stiffness = Spring.StiffnessMedium
+                                                    )
+                                                )
+                                                isDrawerOpen = true
+                                            }
+                                        },
+                                        modifier = Modifier.align(Alignment.CenterStart)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.btn_left_menu_normal),
+                                            contentDescription = "Menu",
+                                            tint = Color.Unspecified,
+                                            modifier = Modifier.size(32.dp)
+                                        )
+                                    }
+                                    // 標題（置中）
+                                    Text(
+                                        text = stringResource(id = R.string.digital_tagging),
+                                        color = Color.White,
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                         }
-                        Box {
-                            Button(
-                                onClick = onViewHistory,
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)),
-                                shape = RoundedCornerShape(4.dp),
-                                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
-                            ) {
-                                Text(stringResource(id = R.string.view), color = Color.White, fontSize = 16.sp)
+
+                        // Main content
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .background(Color(0xFFE8E8E8)),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            val currentTime = remember { mutableStateOf("") }
+                            val currentDate = remember { mutableStateOf("") }
+                            LaunchedEffect(Unit) {
+                                var counter = 0
+                                while (true) {
+                                    val now = Date()
+                                    currentTime.value = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now)
+                                    currentDate.value = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(now)
+                                    if (counter % 10 == 0) {
+                                        viewModel.checkRecordingStatus()
+                                        viewModel.loadEventTags()
+                                    }
+                                    counter++
+                                    kotlinx.coroutines.delay(1000)
+                                }
                             }
 
-                            if (uiState.showSyncErrorBadge) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.icon_warning2),
-                                    contentDescription = "Sync Error",
-                                    modifier = Modifier
-                                        .size(26.dp)
-                                        .align(Alignment.TopEnd)
-                                        .offset(x = 8.dp, y = (-8).dp)
+                            Spacer(modifier = Modifier.weight(1f)) // 上方空白，讓內容垂直置中
+
+                            Text(
+                                text = currentTime.value,
+                                fontSize = 96.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF797979)
+                            )
+                            Text(
+                                text = currentDate.value,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color(0xFF797979),
+                                modifier = Modifier.padding(top = 2.dp)
+                            )
+
+                            Text(
+                                text = if (uiState.isMeasuring) stringResource(id = R.string.tap_to_tag) else stringResource(id = R.string.no_recording),
+                                fontSize = 24.sp,
+                                color = Color(0xFF797979),
+                                fontWeight = FontWeight.ExtraBold,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+
+                            TagButton(
+                                isMeasuring = uiState.isMeasuring,
+                                onClick = { viewModel.onTagPressed() },
+                                modifier = Modifier.offset(y = (-10).dp)
+                            )
+
+                            Image(
+                                painter = painterResource(id = R.drawable.img_rx),
+                                contentDescription = "Device",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .scale(1.2f)
+                                    .offset(y = (-20).dp),
+                                contentScale = ContentScale.Fit
+                            )
+
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+
+                        // Bottom bar (Footer)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF888888))
+                                .padding(horizontal = 20.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(id = R.string.last_tag), color = Color(0xFFE0E0E0), fontSize = 14.sp)
+                                Text(
+                                    text = uiState.lastTagTime ?: stringResource(id = R.string.no_records),
+                                    color = Color.White,
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
+                            Box {
+                                Button(
+                                    onClick = onViewHistory,
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)),
+                                    shape = RoundedCornerShape(4.dp),
+                                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
+                                ) {
+                                    Text(stringResource(id = R.string.view), color = Color.White, fontSize = 16.sp)
+                                }
+                                if (uiState.showSyncErrorBadge) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.icon_warning2),
+                                        contentDescription = "Sync Error",
+                                        modifier = Modifier
+                                            .size(26.dp)
+                                            .align(Alignment.TopEnd)
+                                            .offset(x = 8.dp, y = (-8).dp)
+                                    )
+                                }
+                            }
+                        }
+                    } // end main Column
+
+                    // Tag Flow Overlay
+                    if (tagFlowOpen) {
+                        TagFlowOverlay(
+                            viewModel = viewModel,
+                            sheetState = sheetState,
+                            onStartVoiceInput = startVoiceInput
+                        )
+                    }
+                } // end BoxWithConstraints
+            } // end Scaffold
+        } // end main content Box (push drawer)
+
+        // ── 遮罩：點擊主畫面區域關閉抽屜 ──
+        if (isOpen) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset { androidx.compose.ui.unit.IntOffset(drawerOffsetPx.value.toInt(), 0) }
+                    .background(Color.Black.copy(alpha = 0.25f))
+                    .clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }) {
+                        scope.launch {
+                            drawerOffsetPx.animateTo(
+                                0f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                )
+                            )
+                            isDrawerOpen = false
                         }
                     }
-                }
-            }
-
-
-            // Tag Flow Overlay
-            if (uiState.tagFlowStep != TagFlowStep.IDLE) {
-                TagFlowOverlay(
-                    viewModel = viewModel,
-                    onStartVoiceInput = startVoiceInput
-                )
-            }
+            )
         }
+    } // end Push Drawer outer Box
+
+    // 個人資料 overlay（從底部滑入，主畫面完整保留在下方）
+    AnimatedVisibility(
+        visible = showProfile,
+        enter = slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = tween(400, easing = FastOutSlowInEasing)
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = tween(400, easing = FastOutSlowInEasing)
+        )
+    ) {
+        ProfileScreen(
+            onBack = { showProfile = false },
+            onLogoutSuccess = {
+                showProfile = false
+                onLogout()
+            }
+        )
     }
-}
+
+    } // end outer Box
+} // end MainScreen
+
 
 @Composable
 fun TagButton(isMeasuring: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {

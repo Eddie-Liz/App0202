@@ -2,10 +2,8 @@
 <resources>
     <string name="account_id">Account ID</string>
     <string name="app_name">Tag&amp;Go</string>
-<<<<<<< HEAD
     <string name="welcome">Welcome</string>
     <string name="login_description">Please fill in details and login</string>
-    <string name="account_id">Account ID</string>
     <string name="id_number">ID Number</string>
     <string name="select_server">Select Server</string>
     <string name="login">Login</string>
@@ -18,9 +16,12 @@
     <string name="view">View</string>
     <string name="no_recording">You are not currently recording!</string>
     <string name="tap_to_tag">Tap the button to tag an event</string>
+    <string name="tag_flow_header">You just pressed Tag!</string>
     <string name="retry_upload">Retry Upload</string>
-    <string name="symptoms_title">1. Symptoms you felt</string>
-    <string name="intensity_title">2. Current intensity</string>
+    <string name="symptoms_title">1. What symptoms are you feeling?</string>
+    <string name="intensity_title">2. What was your exercise intensity?</string>
+    <string name="symptoms_label">Symptoms you felt</string>
+    <string name="intensity_label">Current exercise intensity</string>
     <string name="confirm_logout">Are you sure you want to log out?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -29,8 +30,6 @@
     <string name="no_records">No records</string>
     <string name="loading">Loading...</string>
     <string name="error_occurred">An error occurred: %1$s</string>
-    
-    <!-- Symptoms -->
     <string name="symptom_chest_pain">Chest pain/tightness</string>
     <string name="symptom_dizziness">Dizziness</string>
     <string name="symptom_palpitations">Palpitations</string>
@@ -38,8 +37,6 @@
     <string name="symptom_rapid_heartbeat">Rapid heartbeat</string>
     <string name="symptom_shortness_of_breath">Shortness of breath</string>
     <string name="symptom_others">Others (Enter other symptoms)</string>
-    
-    <!-- Intensity -->
     <string name="intensity_high">High Intensity</string>
     <string name="intensity_medium">Medium Intensity</string>
     <string name="intensity_low">Low Intensity</string>
@@ -64,23 +61,18 @@
     <string name="no_intensity_recorded">No intensity recorded</string>
     <string name="back_desc">Back</string>
     <string name="medical_clinic">Medical Clinic:</string>
-</resources>
-=======
-    <string name="cancel_tag">Cancel Tag</string>
     <string name="check">Check</string>
     <string name="current_exercise_intensity">Current exercise intensity</string>
     <string name="current_exercise_intensity_2">2.Current exercise intensity</string>
     <string name="exercise_intensity_before_tagging">Exercise Intensity before tagging</string>
     <string name="high_intensity_exercise">High-intensity Exercise</string>
     <string name="how_intense_was_your_exercise_just_now">2. How intense was your exercise just now?</string>
-    <string name="id_number">ID Number</string>
     <string name="invalid_institution_id_patient">Invalid Institution ID Patient</string>
     <string name="invalid_patient">Invalid Patient</string>
     <string name="login_failed_due_to_you_re_not_in_measuring">Login failed, due to you\'re not in measuring.</string>
     <string name="login_failed_not_in_measuring">Login failed, due to you\'re not in measuring.</string>
     <string name="logout_failed">Logout failed</string>
     <string name="low_intensity_exercise">Low-intensity Exercise</string>
-    <string name="medical_clinic">Medical Clinic</string>
     <string name="moderate_intensity_exercise">Moderate-intensity Exercise</string>
     <string name="n1_symptoms_you_feel">1.Symptoms you feel</string>
     <string name="n1_what_symptoms_are_you_feeling">1. What symptoms are you feeling?</string>
@@ -118,6 +110,4 @@
     <string name="you_still_have_data_that_hasn_t_been_uploaded_are_you_sure_you_want_to_log_out">You still have data that hasn\'t been uploaded. Are you sure you want to log out?</string>
     <string name="your_device_is_not_currently_recording">Your device is not currently recording, the event cannot be marked!</string>
     <string name="your_device_is_not_currently_recording_the_event_cannot_be_marked">Your device is not currently recording, the event cannot be marked!</string>
-    <string name="your_tags">Your Tags</string>
 </resources>
->>>>>>> c5116d1b47a0d3b946b93b8333b56799917a91dd

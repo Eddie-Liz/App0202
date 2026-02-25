@@ -20,6 +20,9 @@ interface EventTagDao {
     @Query("SELECT COUNT(*) FROM event_tags WHERE is_edit")
     suspend fun getUnsyncedCount(): Int
 
+    @Query("DELETE FROM event_tags WHERE id = :id")
+    suspend fun deleteById(id: String)
+
     @Query("DELETE FROM event_tags")
     suspend fun clearAll()
 }

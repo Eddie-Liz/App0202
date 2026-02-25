@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="welcome">Bienvenido</string>
     <string name="login_description">Complete los detalles e inicie sesión</string>

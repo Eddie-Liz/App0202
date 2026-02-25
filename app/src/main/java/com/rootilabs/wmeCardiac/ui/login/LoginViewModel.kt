@@ -146,14 +146,16 @@ class LoginViewModel : ViewModel() {
     }
 
     fun onBarcodeScanned(barcode: String) {
-        // Assume format: institutionId,patientId or just institutionId
-        if (barcode.contains(",")) {
-            val parts = barcode.split(",")
-            institutionId = parts[0].trim()
-            if (parts.size > 1) patientId = parts[1].trim()
+        // Support multiple delimiters: comma, semicolon, pipe, space
+        val delimiter = Regex("[,;| ]")
+        val parts = barcode.split(delimiter).map { it.trim() }.filter { it.isNotEmpty() }
+        if (parts.size >= 2) {
+            // Format: institutionId + delimiter + patientId
+            institutionId = parts[0]
+            patientId = parts[1]
         } else {
-            // If only one value, try to guess or just put it in institutionId
-            institutionId = barcode.trim()
+            // Single value → fill ID Number (patientId) only
+            patientId = barcode.trim()
         }
         uiState = uiState.copy(showScanner = false)
     }

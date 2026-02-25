@@ -1,5 +1,6 @@
 package com.rootilabs.wmeCardiac.ui.profile
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -53,91 +54,107 @@ fun ProfileScreen(
     }
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(stringResource(id = R.string.personal_profile), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-                actions = {
-                    IconButton(onClick = onBack) {
-                        Surface(
-                            shape = CircleShape,
-                            color = Color.White.copy(alpha = 0.2f),
-                            modifier = Modifier.size(32.dp).border(1.dp, Color.White, CircleShape)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(id = R.string.back_desc),
-                                tint = Color.White,
-                                modifier = Modifier.padding(4.dp)
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = TagGoGreen
-                )
-            )
-        }
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color(0xFFF5F6F9)),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+                .background(Color(0xFFF5F6F9))
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = 40.dp)
+            // Shared Header Background (固定 56dp，與浮動按鈕完全對齊)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(TagGoGreen)
             ) {
-                // ID Section
-                ProfileInfoItem(
-                    painter = painterResource(id = R.drawable.profile_icon_normal),
-                    label = stringResource(id = R.string.id_number),
-                    value = displayedPatientId
-                )
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                // Clinic Section
-                ProfileInfoItem(
-                    painter = painterResource(id = R.drawable.icon_symptom),
-                    label = stringResource(id = R.string.medical_clinic),
-                    value = vendorName
-                )
-
-                Spacer(modifier = Modifier.height(60.dp))
-
-                // Logout Button
-                Button(
-                    onClick = { showLogoutDialog = true },
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .height(56.dp),
-                    enabled = !uiState.isLoading,
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = TagGoGreen)
-                ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                    } else {
-                        Text(stringResource(id = R.string.logout), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Column {
+                    Spacer(modifier = Modifier.statusBarsPadding())
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(
+                            onClick = onBack,
+                            modifier = Modifier.align(Alignment.CenterEnd)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.btn_close_normal),
+                                contentDescription = stringResource(id = R.string.back_desc),
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                        Text(
+                            text = stringResource(id = R.string.personal_profile),
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
+            }
 
-                if (uiState.error != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = uiState.error!!, color = Color.Red, fontSize = 14.sp)
+            // Content area
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(bottom = paddingValues.calculateBottomPadding()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(top = 40.dp)
+                ) {
+                    ProfileInfoItem(
+                        painter = painterResource(id = R.drawable.icon_id),
+                        label = stringResource(id = R.string.id_number),
+                        value = displayedPatientId
+                    )
+
+                    Spacer(modifier = Modifier.height(40.dp))
+
+                    ProfileInfoItem(
+                        painter = painterResource(id = R.drawable.icon_clinic),
+                        label = stringResource(id = R.string.medical_clinic),
+                        value = vendorName
+                    )
+
+                    Spacer(modifier = Modifier.height(60.dp))
+
+                    Button(
+                        onClick = { showLogoutDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .height(56.dp),
+                        enabled = !uiState.isLoading,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = TagGoGreen)
+                    ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        } else {
+                            Text(stringResource(id = R.string.logout), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    if (uiState.error != null) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(text = uiState.error!!, color = Color.Red, fontSize = 14.sp)
+                    }
+
+                    Spacer(modifier = Modifier.height(60.dp))
+                    Text(
+                        text = stringResource(id = R.string.version, "2.0.35"),
+                        color = Color.Gray,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
                 }
-
-                Spacer(modifier = Modifier.height(60.dp))
-                // Version display at bottom
-                Text(
-                    text = stringResource(id = R.string.version, "2.0.35"),
-                    color = Color.Gray,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
             }
         }
     }
@@ -210,20 +227,11 @@ private fun ProfileInfoItem(
     value: String
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Surface(
-            modifier = Modifier
-                .size(100.dp)
-                .border(2.dp, TagGoGreen, CircleShape),
-            shape = CircleShape,
-            color = TagGoGreen
-        ) {
-            Icon(
-                painter = painter,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(60.dp).padding(16.dp)
-            )
-        }
+        Image(
+            painter = painter,
+            contentDescription = null,
+            modifier = Modifier.size(100.dp)
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = label, color = Color(0xFFAAAAAA), fontSize = 16.sp)
         Text(text = value, color = Color.Black, fontSize = 22.sp, fontWeight = FontWeight.Bold)

@@ -171,6 +171,9 @@ class RootiCareRepository(
             var currentPage = 1
             var totalSaved = 0
 
+            // 用 tagTime 對應本地記錄（本地 ID 是 TAG-xxx，伺服器 ID 是 UUID，不同）
+            val existingTagsByTime = database.eventTagDao().getAll().associateBy { it.tagTime }
+
             while (true) {
                 val response = rootiCareApi.getEventTagHistory(
                     institutionId = institutionId,
@@ -183,13 +186,30 @@ class RootiCareRepository(
 
                 val dbEntities = body.rows.mapNotNull { tag ->
                     try {
-                        tag.toDbEntity(measureId, MeasurementInfo.MODE_VIRTUAL_TAG)
+                        val entity = tag.toDbEntity(measureId, MeasurementInfo.MODE_VIRTUAL_TAG)
+                        // 伺服器遺失 others 時，從本地同 tagTime 的記錄補回
+                        val localTag = existingTagsByTime[entity.tagTime]
+                        if (entity.others == null && localTag?.others != null) {
+                            entity.copy(others = localTag.others)
+                        } else {
+                            entity
+                        }
                     } catch (e: Exception) {
                         Log.e(TAG, "parseVirtualEventTag error: ${e.message}")
                         null
                     }
                 }
                 database.eventTagDao().insertAll(dbEntities)
+
+                // 刪除已被伺服器版本取代的本地暫存記錄（TAG- 開頭的 ID），避免重複
+                dbEntities.forEach { serverEntity ->
+                    val localTag = existingTagsByTime[serverEntity.tagTime]
+                    if (localTag != null && localTag.id.startsWith("TAG-") && localTag.id != serverEntity.id) {
+                        database.eventTagDao().deleteById(localTag.id)
+                        Log.d(TAG, "Removed local temp tag ${localTag.id}, replaced by server ${serverEntity.id}")
+                    }
+                }
+
                 totalSaved += dbEntities.size
 
                 if (currentPage >= body.totalPage) break
@@ -202,6 +222,7 @@ class RootiCareRepository(
             Result.failure(e)
         }
     }
+
 
     // ---- API #6: Unsubscribe (Logout) ----
     suspend fun unsubscribePatient(
@@ -263,6 +284,15 @@ class RootiCareRepository(
                 appType = 1, // Android
                 tags = tags.map { it.toVirtualTagRequest() }
             )
+
+            // Debug: 印出實際送出的資料
+            request.tags.forEachIndexed { i, tag ->
+                Log.d(TAG, "=== Tag[$i] Upload Payload ===")
+                Log.d(TAG, "  tagTime: ${tag.tagTime}")
+                Log.d(TAG, "  exerciseIntensity: ${tag.exerciseIntensity}")
+                Log.d(TAG, "  symptomTypes.symptomTypes(${tag.symptomTypes?.symptomTypes?.size ?: 0}個): ${tag.symptomTypes?.symptomTypes}")
+                Log.d(TAG, "  symptomTypes.others: ${tag.symptomTypes?.others}")
+            }
 
             val result = rootiCareApi.addVirtualEventTags(
                 institutionId = institutionId,
@@ -326,27 +356,27 @@ class RootiCareRepository(
     }
 
     private fun VirtualTagEntity.toDbEntity(measureId: String, measureMode: Int): EventTagDbEntity {
-        // Standard Local Formatter (Taiwan TZ)
         val formatter = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
         
-        // Robust Timestamp Detection
         val rawTime = tagTime ?: 0L
         val serverMillis = if (rawTime > 0 && rawTime < 100000000000L) {
-            rawTime * 1000 // Server uses seconds
+            rawTime * 1000
         } else {
             rawTime 
         }
 
-        // The server likely sends 'Wall-Clock' time (Local Time).
-        // To maintain DB consistency as UTC, we subtract the current timezone offset.
-        val timezoneOffset = TimeZone.getDefault().getOffset(serverMillis)
-        val tt = serverMillis - timezoneOffset
+        // 伺服器傳回 UTC 秒數，直接轉換為 UTC ms（不需要再加減時區）
+        val tt = serverMillis
 
         val ei = exerciseIntensity ?: 0
         
-        // Use nested symptomTypes from history API
         val symptoms = symptomTypes?.symptomTypes ?: emptyList()
         val symptomOthers = symptomTypes?.others
+
+        // Debug: 印出從伺服器讀回的 symptomTypes 格式
+        Log.d(TAG, "=== History Tag from Server ===")
+        Log.d(TAG, "  raw symptomTypes.symptomTypes: $symptoms")
+        Log.d(TAG, "  raw symptomTypes.others: $symptomOthers")
 
         return EventTagDbEntity(
             id = tagId ?: "TAG-${System.currentTimeMillis()}",
@@ -363,10 +393,8 @@ class RootiCareRepository(
     }
 
     private fun EventTagDbEntity.toVirtualTagRequest(): VirtualTagRequest {
-        // Capture the Wall-Clock time (UTC + Offset) before uploading in seconds.
-        // This ensures other devices (iOS) see the intended local time value.
-        val timezoneOffset = TimeZone.getDefault().getOffset(tagTime)
-        val wallClockSeconds = (tagTime + timezoneOffset) / 1000
+        // 使用純 UTC 秒數上傳，與 iOS 保持一致（iOS 也送 UTC seconds）
+        val utcSeconds = tagTime / 1000
 
         // Server expects symptomTypes as a nested object: {"symptomTypes": [...], "others": "..."}
         val symptomPayload = if (!eventType.isNullOrEmpty() || !others.isNullOrBlank()) {
@@ -377,7 +405,7 @@ class RootiCareRepository(
         } else null
 
         return VirtualTagRequest(
-            tagTime = wallClockSeconds,
+            tagTime = utcSeconds,
             exerciseIntensity = exerciseIntensity,
             symptomTypes = symptomPayload
         )
