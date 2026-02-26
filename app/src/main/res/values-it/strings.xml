@@ -15,10 +15,13 @@
     <string name="view">Visualizza</string>
     <string name="no_recording">Non stai registrando al momento!</string>
     <string name="tap_to_tag">Tocca il pulsante per marcare un evento</string>
+    <string name="tag_flow_header">Hai appena premuto Tag!</string>
     <string name="retry_upload">Riprova caricamento</string>
     <string name="symptoms_title">1. Sintomi avvertiti</string>
     <string name="intensity_title">2. Intensità attuale</string>
-    <string name="confirm_logout">Sei sicuro di voler uscit?</string>
+    <string name="symptoms_label">Sintomi avvertiti</string>
+    <string name="intensity_label">Intensità di esercizio attuale</string>
+    <string name="confirm_logout">Sei sicuro di voler uscire?</string>
     <string name="yes">Sì</string>
     <string name="no">No</string>
     <string name="version">Versione app: %1$s</string>
@@ -26,7 +29,7 @@
     <string name="no_records">Nessun record</string>
     <string name="loading">Caricamento...</string>
     <string name="error_occurred">Si è verificato un errore: %1$s</string>
-    
+
     <!-- Symptoms -->
     <string name="symptom_chest_pain">Dolore/Oppressione toracica</string>
     <string name="symptom_dizziness">Vertigini</string>
@@ -35,7 +38,7 @@
     <string name="symptom_rapid_heartbeat">Battito accelerato</string>
     <string name="symptom_shortness_of_breath">Mancanza di respiro</string>
     <string name="symptom_others">Altri (Inserisci altri sintomi)</string>
-    
+
     <!-- Intensity -->
     <string name="intensity_high">Alta intensità</string>
     <string name="intensity_medium">Intensità media</string>
@@ -45,4 +48,21 @@
     <string name="intensity_medium_desc">Scale, camminata normale, ecc.</string>
     <string name="intensity_low_desc">Passeggiata</string>
     <string name="intensity_resting_desc">Seduto, dormendo, ecc.</string>
+
+    <string name="voice_prompt">Parla dei sintomi...</string>
+    <string name="voice_input_hint">Tocca il microfono per parlare...</string>
+    <string name="voice_input">Inserimento vocale</string>
+    <string name="tag_time_label">Ora marcatura: %1$s</string>
+    <string name="cancel_tag">Annulla</string>
+    <string name="next_step">Avanti</string>
+    <string name="confirm">Conferma</string>
+    <string name="no_symptoms_selected">Nessun sintomo selezionato</string>
+    <string name="no_intensity_selected">Nessuna intensità selezionata</string>
+    <string name="edit">Modifica</string>
+    <string name="send">Invia</string>
+    <string name="your_tags">Le tue marcature</string>
+    <string name="no_symptoms_recorded">Nessun sintomo registrato</string>
+    <string name="no_intensity_recorded">Nessuna intensità registrata</string>
+    <string name="back_desc">Indietro</string>
+    <string name="medical_clinic">Clinica medica:</string>
 </resources>

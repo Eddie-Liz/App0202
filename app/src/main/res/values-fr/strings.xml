@@ -15,9 +15,12 @@
     <string name="view">Voir</string>
     <string name="no_recording">Vous n\'enregistrez pas actuellement !</string>
     <string name="tap_to_tag">Appuyez sur le bouton pour marquer un événement</string>
+    <string name="tag_flow_header">Vous venez d\'appuyer sur Tag !</string>
     <string name="retry_upload">Réessayer le téléchargement</string>
     <string name="symptoms_title">1. Symptômes ressentis</string>
     <string name="intensity_title">2. Intensité actuelle</string>
+    <string name="symptoms_label">Symptômes ressentis</string>
+    <string name="intensity_label">Intensité d\'exercice actuelle</string>
     <string name="confirm_logout">Êtes-vous sûr de vouloir vous déconnecter ?</string>
     <string name="yes">Oui</string>
     <string name="no">Non</string>
@@ -26,7 +29,7 @@
     <string name="no_records">Aucun enregistrement</string>
     <string name="loading">Chargement...</string>
     <string name="error_occurred">Une erreur est survenue : %1$s</string>
-    
+
     <!-- Symptoms -->
     <string name="symptom_chest_pain">Douleur/Oppression thoracique</string>
     <string name="symptom_dizziness">Étourdissements</string>
@@ -35,7 +38,7 @@
     <string name="symptom_rapid_heartbeat">Battements de cœur rapides</string>
     <string name="symptom_shortness_of_breath">Essoufflement</string>
     <string name="symptom_others">Autres (Entrez d\'autres symptômes)</string>
-    
+
     <!-- Intensity -->
     <string name="intensity_high">Haute intensité</string>
     <string name="intensity_medium">Intensité moyenne</string>
@@ -45,4 +48,21 @@
     <string name="intensity_medium_desc">Escaliers, marche normale, etc.</string>
     <string name="intensity_low_desc">Promenade</string>
     <string name="intensity_resting_desc">Assis, dormant, etc.</string>
+
+    <string name="voice_prompt">Veuillez parler des symptômes...</string>
+    <string name="voice_input_hint">Appuyez sur le micro pour parler...</string>
+    <string name="voice_input">Entrée vocale</string>
+    <string name="tag_time_label">Heure du marquage : %1$s</string>
+    <string name="cancel_tag">Annuler</string>
+    <string name="next_step">Suivant</string>
+    <string name="confirm">Confirmer</string>
+    <string name="no_symptoms_selected">Aucun symptôme sélectionné</string>
+    <string name="no_intensity_selected">Aucune intensité sélectionnée</string>
+    <string name="edit">Modifier</string>
+    <string name="send">Envoyer</string>
+    <string name="your_tags">Vos marquages</string>
+    <string name="no_symptoms_recorded">Aucun symptôme enregistré</string>
+    <string name="no_intensity_recorded">Aucune intensité enregistrée</string>
+    <string name="back_desc">Retour</string>
+    <string name="medical_clinic">Clinique médicale :</string>
 </resources>

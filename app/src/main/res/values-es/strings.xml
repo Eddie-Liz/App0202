@@ -15,9 +15,12 @@
     <string name="view">Ver</string>
     <string name="no_recording">¡No estás grabando actualmente!</string>
     <string name="tap_to_tag">Toca el botón para etiquetar un evento</string>
+    <string name="tag_flow_header">¡Acabas de presionar Tag!</string>
     <string name="retry_upload">Reintentar carga</string>
     <string name="symptoms_title">1. Síntomas sentidos</string>
     <string name="intensity_title">2. Intensidad actual</string>
+    <string name="symptoms_label">Síntomas experimentados</string>
+    <string name="intensity_label">Intensidad de ejercicio actual</string>
     <string name="confirm_logout">¿Estás seguro de que quieres cerrar sesión?</string>
     <string name="yes">Sí</string>
     <string name="no">No</string>
@@ -26,7 +29,7 @@
     <string name="no_records">Sin registros</string>
     <string name="loading">Cargando...</string>
     <string name="error_occurred">Ocurrió un error: %1$s</string>
-    
+
     <!-- Symptoms -->
     <string name="symptom_chest_pain">Dolor/Opresión en el pecho</string>
     <string name="symptom_dizziness">Mareos</string>
@@ -35,7 +38,7 @@
     <string name="symptom_rapid_heartbeat">Latidos rápidos</string>
     <string name="symptom_shortness_of_breath">Falta de aire</string>
     <string name="symptom_others">Otros (Ingrese otros síntomas)</string>
-    
+
     <!-- Intensity -->
     <string name="intensity_high">Alta intensidad</string>
     <string name="intensity_medium">Intensidad media</string>
@@ -45,4 +48,21 @@
     <string name="intensity_medium_desc">Escaleras, caminar normal, etc.</string>
     <string name="intensity_low_desc">Paseo</string>
     <string name="intensity_resting_desc">Sentado, durmiendo, etc.</string>
+
+    <string name="voice_prompt">Por favor, diga los síntomas...</string>
+    <string name="voice_input_hint">Toca el micrófono para hablar...</string>
+    <string name="voice_input">Entrada de voz</string>
+    <string name="tag_time_label">Hora de etiqueta: %1$s</string>
+    <string name="cancel_tag">Cancelar</string>
+    <string name="next_step">Siguiente</string>
+    <string name="confirm">Confirmar</string>
+    <string name="no_symptoms_selected">Ningún síntoma seleccionado</string>
+    <string name="no_intensity_selected">Ninguna intensidad seleccionada</string>
+    <string name="edit">Editar</string>
+    <string name="send">Enviar</string>
+    <string name="your_tags">Tus etiquetas</string>
+    <string name="no_symptoms_recorded">No hay síntomas registrados</string>
+    <string name="no_intensity_recorded">No hay intensidad registrada</string>
+    <string name="back_desc">Atrás</string>
+    <string name="medical_clinic">Clínica médica:</string>
 </resources>

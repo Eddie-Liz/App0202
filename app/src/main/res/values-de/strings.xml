@@ -15,9 +15,12 @@
     <string name="view">Ansehen</string>
     <string name="no_recording">Sie nehmen derzeit nicht auf!</string>
     <string name="tap_to_tag">Tippen Sie auf die Taste, um ein Ereignis zu kennzeichnen</string>
+    <string name="tag_flow_header">Sie haben gerade Tag gedrückt!</string>
     <string name="retry_upload">Upload erneut versuchen</string>
     <string name="symptoms_title">1. Gefühlte Symptome</string>
     <string name="intensity_title">2. Aktuelle Intensität</string>
+    <string name="symptoms_label">Gefühlte Symptome</string>
+    <string name="intensity_label">Aktuelle Übungsintensität</string>
     <string name="confirm_logout">Sind Sie sicher, dass Sie sich abmelden möchten?</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
@@ -26,7 +29,7 @@
     <string name="no_records">Keine Einträge</string>
     <string name="loading">Laden...</string>
     <string name="error_occurred">Ein Fehler ist aufgetreten: %1$s</string>
-    
+
     <!-- Symptoms -->
     <string name="symptom_chest_pain">Brustschmerzen/Engegefühl</string>
     <string name="symptom_dizziness">Schwindel</string>
@@ -35,7 +38,7 @@
     <string name="symptom_rapid_heartbeat">Schneller Herzschlag</string>
     <string name="symptom_shortness_of_breath">Atemnot</string>
     <string name="symptom_others">Andere (Andere Symptome eingeben)</string>
-    
+
     <!-- Intensity -->
     <string name="intensity_high">Hohe Intensität</string>
     <string name="intensity_medium">Mittlere Intensität</string>
@@ -45,4 +48,21 @@
     <string name="intensity_medium_desc">Treppen, normales Gehen usw.</string>
     <string name="intensity_low_desc">Spaziergang</string>
     <string name="intensity_resting_desc">Sitzen, Schlafen usw.</string>
+
+    <string name="voice_prompt">Bitte sprechen Sie die Symptome...</string>
+    <string name="voice_input_hint">Mikrofon tippen zum Sprechen...</string>
+    <string name="voice_input">Spracheingabe</string>
+    <string name="tag_time_label">Tag-Zeit: %1$s</string>
+    <string name="cancel_tag">Abbrechen</string>
+    <string name="next_step">Weiter</string>
+    <string name="confirm">Bestätigen</string>
+    <string name="no_symptoms_selected">Keine Symptome ausgewählt</string>
+    <string name="no_intensity_selected">Keine Intensität ausgewählt</string>
+    <string name="edit">Bearbeiten</string>
+    <string name="send">Senden</string>
+    <string name="your_tags">Ihre Tags</string>
+    <string name="no_symptoms_recorded">Keine Symptome erfasst</string>
+    <string name="no_intensity_recorded">Keine Intensität erfasst</string>
+    <string name="back_desc">Zurück</string>
+    <string name="medical_clinic">Medizinische Klinik:</string>
 </resources>

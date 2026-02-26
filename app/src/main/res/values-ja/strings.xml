@@ -15,9 +15,12 @@
     <string name="view">表示</string>
     <string name="no_recording">現在記録されていません！</string>
     <string name="tap_to_tag">ボタンをタップしてイベントをタグ付け</string>
+    <string name="tag_flow_header">タグを押しました！</string>
     <string name="retry_upload">再アップロード</string>
     <string name="symptoms_title">1. 感じた症状</string>
     <string name="intensity_title">2. 現在の運動強度</string>
+    <string name="symptoms_label">感じた症状</string>
+    <string name="intensity_label">現在の運動強度</string>
     <string name="confirm_logout">ログアウトしてもよろしいですか？</string>
     <string name="yes">はい</string>
     <string name="no">いいえ</string>
@@ -26,7 +29,7 @@
     <string name="no_records">記録なし</string>
     <string name="loading">読み込み中...</string>
     <string name="error_occurred">エラーが発生しました: %1$s</string>
-    
+
     <!-- Symptoms -->
     <string name="symptom_chest_pain">胸の痛み・圧迫感</string>
     <string name="symptom_dizziness">めまい</string>
@@ -35,7 +38,7 @@
     <string name="symptom_rapid_heartbeat">心拍数上昇</string>
     <string name="symptom_shortness_of_breath">息切れ</string>
     <string name="symptom_others">その他 (他の症状を入力)</string>
-    
+
     <!-- Intensity -->
     <string name="intensity_high">高強度運動</string>
     <string name="intensity_medium">中強度運動</string>
@@ -45,6 +48,7 @@
     <string name="intensity_medium_desc">階段、通常の歩行など</string>
     <string name="intensity_low_desc">散歩</string>
     <string name="intensity_resting_desc">座る、寝るなど</string>
+
     <string name="voice_prompt">症状を話してください...</string>
     <string name="voice_input_hint">マイクをタップして入力...</string>
     <string name="voice_input">音声入力</string>
@@ -56,4 +60,9 @@
     <string name="no_intensity_selected">強度が選択されていません</string>
     <string name="edit">編集</string>
     <string name="send">送信</string>
+    <string name="your_tags">あなたのタグ</string>
+    <string name="no_symptoms_recorded">症状の記録なし</string>
+    <string name="no_intensity_recorded">強度の記録なし</string>
+    <string name="back_desc">戻る</string>
+    <string name="medical_clinic">医療機関:</string>
 </resources>
