@@ -165,9 +165,10 @@ private fun BoxScope.SymptomSelectionContent(
         Text(
             text = stringResource(id = R.string.symptoms_title),
             modifier = Modifier.padding(16.dp),
-            fontWeight = FontWeight.Normal,
+            fontWeight = FontWeight.Bold,
             fontSize = 32.sp,
-            color = Color(0xFF5B5B5B)
+            lineHeight = 40.sp,
+            color = Color(0xFF424242)
         )
 
         Column(
@@ -210,6 +211,7 @@ private fun BoxScope.SymptomSelectionContent(
                         Text(
                             text = stringResource(id = symptom.labelResId),
                             fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color(0xFF5B5B5B),
                             modifier = Modifier.weight(1f)
                         )
@@ -251,7 +253,15 @@ private fun BoxScope.SymptomSelectionContent(
                     )
                 }
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(stringResource(id = R.string.symptom_others), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF5B5B5B))
+                Text(
+                    text = stringResource(id = R.string.symptom_others),
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF5B5B5B),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
             }
             Row(
                 modifier = Modifier
@@ -331,6 +341,7 @@ private fun BoxScope.ExerciseSelectionContent(viewModel: MainViewModel) {
             modifier = Modifier.padding(16.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 32.sp,
+            lineHeight = 40.sp,
             color = Color(0xFF424242)
         )
         HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 1.dp)
