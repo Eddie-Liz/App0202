@@ -74,38 +74,9 @@ class RootiCareRepository(
                     Result.failure(Exception(msg))
                 }
             } else if (response.code() == 409) {
-                // Already subscribed on another device → auto unsubscribe & retry once
-                Log.w(TAG, "authPatient 409: patient already subscribed, auto-unsubscribing...")
-                unsubscribePatient(institutionId, patientId)
-                kotlinx.coroutines.delay(800)
-
-                val retryResponse = rootiCareApi.authPatient(institutionId, patientId)
-                Log.d(TAG, "authPatient retry response code: ${retryResponse.code()}")
-                if (retryResponse.isSuccessful) {
-                    val body = retryResponse.body()
-                    if (body?.vendorName != null) {
-                        tokenManager.institutionId = institutionId
-                        tokenManager.patientId = patientId
-                        tokenManager.vendorName = body.vendorName
-                        tokenManager.isLoggedIn = true
-                        tokenManager.loginTime = System.currentTimeMillis()
-                        Log.d(TAG, "authPatient retry success: vendorName=${body.vendorName}")
-                        // Re-fetch token after re-subscribing to avoid 401 on next API calls
-                        val tokenResult = getToken()
-                        if (tokenResult.isFailure) {
-                            Log.w(TAG, "Token refresh after 409 retry failed, proceeding anyway")
-                        } else {
-                            Log.d(TAG, "Token refreshed successfully after 409 retry")
-                        }
-                        Result.success(body)
-                    } else {
-                        Result.failure(Exception("登入失敗：無效的回應內容"))
-                    }
-                } else {
-                    val errorBody = retryResponse.errorBody()?.string()
-                    Log.e(TAG, "authPatient retry failed: HTTP ${retryResponse.code()} - $errorBody")
-                    Result.failure(Exception(parseError(errorBody)))
-                }
+                // Already subscribed on another device → block login
+                Log.w(TAG, "authPatient 409: patient already subscribed on another device, blocking login.")
+                Result.failure(Exception("ALREADY_SUBSCRIBED"))
             } else {
                 val errorBody = response.errorBody()?.string()
                 Log.e(TAG, "authPatient failed: HTTP ${response.code()} - $errorBody")

@@ -69,7 +69,12 @@ class LoginViewModel : ViewModel() {
             val authResult = repository.authPatient(institutionId, patientId)
             Log.d(TAG, "Step 2 authPatient: success=${authResult.isSuccess}")
             if (authResult.isFailure) {
-                val msg = "登入失敗: ${authResult.exceptionOrNull()?.message}"
+                val cause = authResult.exceptionOrNull()?.message ?: ""
+                val msg = if (cause == "ALREADY_SUBSCRIBED") {
+                    "此帳號已在其他裝置登入，請先登出後再試"
+                } else {
+                    "登入失敗: $cause"
+                }
                 Log.e(TAG, msg)
                 uiState = uiState.copy(isLoading = false, error = msg)
                 return
