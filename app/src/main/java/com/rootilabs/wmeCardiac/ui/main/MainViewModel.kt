@@ -178,13 +178,18 @@ class MainViewModel : ViewModel() {
                 
                 if (institutionId.isNotEmpty() && patientId.isNotEmpty()) {
                     val result = repository.getCurrentMeasurement(institutionId, patientId)
-                    val info = result.getOrNull()
-                    val serverStatus = info?.isMeasuring() ?: false
-                    
-                    if (uiState.isMeasuring != serverStatus) {
-                        Log.d(TAG, "Recording status sync: local=${uiState.isMeasuring} -> server=$serverStatus")
-                        uiState = uiState.copy(isMeasuring = serverStatus)
-                        tokenManager.isMeasuring = serverStatus
+                    if (result.isSuccess) {
+                        val info = result.getOrNull()
+                        val serverStatus = info?.isMeasuring() ?: false
+                        
+                        if (uiState.isMeasuring != serverStatus) {
+                            Log.d(TAG, "Recording status sync: local=${uiState.isMeasuring} -> server=$serverStatus")
+                            uiState = uiState.copy(isMeasuring = serverStatus)
+                            tokenManager.isMeasuring = serverStatus
+                        }
+                    } else {
+                        // Network error or server unreachable -> keep current state to allow offline tagging
+                        Log.w(TAG, "checkRecordingStatus failed, keeping current local state")
                     }
                 }
             } catch (e: Exception) {
