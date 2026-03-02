@@ -16,7 +16,6 @@ android {
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -24,6 +23,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Firebase 測試人員與說明建議在上傳時透過指令（或 Firebase 網頁）填寫，
+            // 避免因 AGP 9.x 版本相容性問題導致編譯失敗。
         }
     }
     compileOptions {
@@ -41,6 +42,11 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
@@ -90,4 +96,10 @@ dependencies {
 
     // ML Kit Barcode Scanning
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
+
+    // WorkManager (Background processing)
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
 }
+
+// 由於 AGP 9.0.1 較新，Firebase 插件目前存在相容性問題，暫不在此套用
+apply(plugin = "com.google.gms.google-services")

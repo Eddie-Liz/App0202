@@ -1,6 +1,7 @@
 package com.rootilabs.wmeCardiac.data.repository
 
 import android.util.Log
+import androidx.work.*
 import com.rootilabs.wmeCardiac.Constants
 import com.rootilabs.wmeCardiac.data.api.AuthApi
 import com.rootilabs.wmeCardiac.data.api.RootiCareApi
@@ -12,6 +13,7 @@ import retrofit2.Response
 import com.squareup.moshi.Moshi
 import java.text.SimpleDateFormat
 import java.util.*
+import com.rootilabs.wmeCardiac.di.ServiceLocator
 
 class RootiCareRepository(
     private val authApi: AuthApi,
@@ -230,12 +232,19 @@ class RootiCareRepository(
                     val fallbackResponse = rootiCareApi.unsubscribePatient(institutionId, patientId)
                     Log.d(TAG, "Fallback Strategy result: ${fallbackResponse.code()}")
                 }
-            } catch (e: java.net.UnknownHostException) {
-                Log.w(TAG, "Logout: Network unreachable (offline), skipping server unsubscribe")
-            } catch (e: java.net.ConnectException) {
-                Log.w(TAG, "Logout: Connection refused, skipping server unsubscribe")
             } catch (e: Exception) {
-                Log.e(TAG, "Logout API error", e)
+                Log.w(TAG, "Logout: Network error or server unreachable. Scheduling background cleanup.")
+                // Schedule WorkManager to clean up when network is back
+                try {
+                    val workRequest = OneTimeWorkRequestBuilder<com.rootilabs.wmeCardiac.data.worker.LogoutWorker>()
+                        .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                        .setInputData(workDataOf("institutionId" to institutionId, "patientId" to patientId))
+                        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, java.util.concurrent.TimeUnit.SECONDS)
+                        .build()
+                    WorkManager.getInstance(ServiceLocator.appContext).enqueue(workRequest)
+                } catch (we: Exception) {
+                    Log.e(TAG, "Failed to schedule background logout", we)
+                }
             }
 
             // Always clear local data on user's logout intent

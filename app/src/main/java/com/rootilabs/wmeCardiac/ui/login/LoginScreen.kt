@@ -258,6 +258,16 @@ fun LoginScreen(
 
             // Error message
             if (uiState.error != null) {
+                val errorText = when (uiState.error) {
+                    "FIELDS_REQUIRED"    -> stringResource(R.string.error_fields_required)
+                    "ALREADY_SUBSCRIBED" -> stringResource(R.string.error_already_subscribed)
+                    "TOKEN_FAILED"       -> stringResource(R.string.error_token_failed)
+                    "MEASUREMENT_FAILED" -> stringResource(R.string.error_measurement_failed)
+                    "NOT_MEASURING"      -> stringResource(R.string.error_not_measuring)
+                    "UNSUPPORTED_MODE"   -> stringResource(R.string.error_unsupported_mode)
+                    "FATAL_ERROR"        -> stringResource(R.string.error_fatal)
+                    else                 -> uiState.error
+                }
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = Color(0xFFFFCDD2)
@@ -265,7 +275,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = uiState.error,
+                        text = errorText,
                         color = Color(0xFFB71C1C),
                         fontSize = 14.sp,
                         modifier = Modifier.padding(12.dp)
@@ -276,6 +286,17 @@ fun LoginScreen(
 
             // Loading status
             if (uiState.isLoading) {
+                val statusText = when {
+                    uiState.statusMessage == "STATUS_TOKEN"       -> stringResource(R.string.status_token)
+                    uiState.statusMessage == "STATUS_AUTH"        -> stringResource(R.string.status_auth)
+                    uiState.statusMessage == "STATUS_MEASUREMENT" -> stringResource(R.string.status_measurement)
+                    uiState.statusMessage == "STATUS_SYNCING"     -> stringResource(R.string.status_syncing)
+                    uiState.statusMessage.startsWith("STATUS_DOWNLOADING:") -> {
+                        val count = uiState.statusMessage.removePrefix("STATUS_DOWNLOADING:").toIntOrNull() ?: 0
+                        stringResource(R.string.status_downloading, count)
+                    }
+                    else -> uiState.statusMessage
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
@@ -287,7 +308,7 @@ fun LoginScreen(
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(uiState.statusMessage, color = Color.White, fontSize = 14.sp)
+                    Text(statusText, color = Color.White, fontSize = 14.sp)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }

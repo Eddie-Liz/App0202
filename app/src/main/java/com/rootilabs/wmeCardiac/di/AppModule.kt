@@ -23,7 +23,8 @@ import java.util.concurrent.TimeUnit
 object ServiceLocator {
 
     private var _instance: ServiceLocator? = null
-    private lateinit var appContext: Context
+    lateinit var appContext: Context
+        private set
 
     lateinit var tokenManager: TokenManager
         private set
