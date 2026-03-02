@@ -1,4 +1,8 @@
+import com.google.devtools.ksp.gradle.KspExtension
+import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
+
 plugins {
+
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
@@ -28,7 +32,17 @@ android {
             // Firebase App Distribution configuration
             firebaseAppDistribution {
                 artifactType = "APK"
-                releaseNotes = "Tag&Go build automated upload"
+                releaseNotes = """
+                    [v1.0.1 Update / 更新說明]
+                    - EN: Added background sync to prevent 409 login conflicts.
+                    - CH: 新增背景同步功能，解決登入 409 衝突問題。
+                    - EN: Enabled offline tagging; buttons remain active without network.
+                    - CH: 支援離線標記，斷網時按鈕仍可正常點擊。
+                    - EN: Optimized logout dialog with unsynced data warnings.
+                    - CH: 優化登出提醒，包含未上傳資料預警功能。
+                    - EN: Updated Asia-Pacific 1 server to dev environment.
+                    - CH: 更新 Asia-Pacific 1 伺服器為測試開發環境。
+                """.trimIndent()
             }
         }
     }
