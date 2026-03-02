@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.appdistribution)
     id("com.google.devtools.ksp") version "2.3.2"
 }
 
@@ -12,8 +14,8 @@ android {
         applicationId = "com.rootilabs.wmeCardiac"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -23,8 +25,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Firebase 測試人員與說明建議在上傳時透過指令（或 Firebase 網頁）填寫，
-            // 避免因 AGP 9.x 版本相容性問題導致編譯失敗。
+            // Firebase App Distribution configuration
+            firebaseAppDistribution {
+                artifactType = "APK"
+                releaseNotes = "Tag&Go build automated upload"
+            }
         }
     }
     compileOptions {
@@ -100,6 +105,3 @@ dependencies {
     // WorkManager (Background processing)
     implementation("androidx.work:work-runtime-ktx:2.10.0")
 }
-
-// 由於 AGP 9.0.1 較新，Firebase 插件目前存在相容性問題，暫不在此套用
-apply(plugin = "com.google.gms.google-services")
