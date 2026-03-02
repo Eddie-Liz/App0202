@@ -219,16 +219,23 @@ class RootiCareRepository(
             val request = UnsubscribeRequest(deviceToken = pushToken)
 
             Log.d(TAG, "Attempting Logout (Primary Strategy) - POST .../unsubscribe: inst=$institutionId, patient=$patientId")
-            val response = rootiCareApi.unsubscribePatientWithSuffix(institutionId, patientId, request)
             
-            Log.d(TAG, "Logout result code: ${response.code()}")
-            
-            if (response.isSuccessful || response.code() == 204) {
-                Log.d(TAG, "Logout success, clearing local data.")
-            } else {
-                Log.d(TAG, "Primary strategy failed (${response.code()}), trying fallback Strategy C (POST base path)")
-                val fallbackResponse = rootiCareApi.unsubscribePatient(institutionId, patientId)
-                Log.d(TAG, "Fallback Strategy result: ${fallbackResponse.code()}")
+            // Execute network call with timeout or just catch the connectivity exception
+            try {
+                val response = rootiCareApi.unsubscribePatientWithSuffix(institutionId, patientId, request)
+                Log.d(TAG, "Logout result code: ${response.code()}")
+                
+                if (!response.isSuccessful && response.code() != 204) {
+                    Log.d(TAG, "Primary strategy failed (${response.code()}), trying fallback Strategy C (POST base path)")
+                    val fallbackResponse = rootiCareApi.unsubscribePatient(institutionId, patientId)
+                    Log.d(TAG, "Fallback Strategy result: ${fallbackResponse.code()}")
+                }
+            } catch (e: java.net.UnknownHostException) {
+                Log.w(TAG, "Logout: Network unreachable (offline), skipping server unsubscribe")
+            } catch (e: java.net.ConnectException) {
+                Log.w(TAG, "Logout: Connection refused, skipping server unsubscribe")
+            } catch (e: Exception) {
+                Log.e(TAG, "Logout API error", e)
             }
 
             // Always clear local data on user's logout intent
@@ -236,7 +243,7 @@ class RootiCareRepository(
             Result.success(Unit)
 
         } catch (e: Exception) {
-            Log.e(TAG, "Logout exception, clearing local anyway", e)
+            Log.e(TAG, "Logout outer exception, clearing local anyway", e)
             clearLocalData()
             Result.success(Unit)
         }
