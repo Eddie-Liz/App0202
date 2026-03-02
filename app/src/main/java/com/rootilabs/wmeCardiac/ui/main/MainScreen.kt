@@ -469,6 +469,10 @@ fun MainScreen(
             onLogoutSuccess = {
                 showProfile = false
                 onLogout()
+            },
+            onUploadClick = {
+                showProfile = false
+                onViewHistory()
             }
         )
     }

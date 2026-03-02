@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 fun ProfileScreen(
     onBack: () -> Unit,
     onLogoutSuccess: () -> Unit,
+    onUploadClick: () -> Unit,
     viewModel: ProfileViewModel = viewModel()
 ) {
     val uiState = viewModel.uiState
@@ -120,7 +121,10 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(60.dp))
 
                     Button(
-                        onClick = { showLogoutDialog = true },
+                        onClick = { 
+                            viewModel.checkUnsyncedData()
+                            showLogoutDialog = true 
+                        },
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .height(56.dp),
@@ -154,9 +158,14 @@ fun ProfileScreen(
 
     if (showLogoutDialog) {
         LogoutConfirmationDialog(
+            unsyncedCount = uiState.unsyncedCount,
             onConfirm = {
                 showLogoutDialog = false
                 viewModel.logout()
+            },
+            onUpload = {
+                showLogoutDialog = false
+                onUploadClick()
             },
             onDismiss = { showLogoutDialog = false }
         )
@@ -165,12 +174,14 @@ fun ProfileScreen(
 
 @Composable
 fun LogoutConfirmationDialog(
+    unsyncedCount: Int = 0,
     onConfirm: () -> Unit,
+    onUpload: () -> Unit = {},
     onDismiss: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(12.dp),
             color = Color.White,
             modifier = Modifier.fillMaxWidth(0.9f)
         ) {
@@ -179,33 +190,71 @@ fun LogoutConfirmationDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = stringResource(id = R.string.confirm_logout),
+                    text = if (unsyncedCount > 0) 
+                        stringResource(id = R.string.you_still_have_data_not_uploaded_confirm_logout)
+                    else 
+                        stringResource(id = R.string.confirm_logout),
                     fontSize = 18.sp,
-                    color = Color(0xFF616161),
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 32.dp)
                 )
                 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Button(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f).height(48.dp),
-                        shape = RoundedCornerShape(4.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = TagGoGreen)
+                if (unsyncedCount > 0) {
+                    // Alert layout with 3 buttons
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(stringResource(id = R.string.no), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Button(
+                            onClick = onUpload,
+                            modifier = Modifier.fillMaxWidth().height(52.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = TagGoGreen)
+                        ) {
+                            Text(stringResource(id = R.string.upload), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        }
+                        
+                        Button(
+                            onClick = onConfirm,
+                            modifier = Modifier.fillMaxWidth().height(52.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        ) {
+                            Text(stringResource(id = R.string.logout), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        }
+                        
+                        TextButton(
+                            onClick = onDismiss,
+                            modifier = Modifier.fillMaxWidth().height(48.dp)
+                        ) {
+                            Text(stringResource(id = R.string.no), color = Color.Gray, fontSize = 16.sp)
+                        }
                     }
-                    
-                    Button(
-                        onClick = onConfirm,
-                        modifier = Modifier.weight(1f).height(48.dp),
-                        shape = RoundedCornerShape(4.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = TagGoGreen)
+                } else {
+                    // Standard Simple Confirmation
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text(stringResource(id = R.string.yes), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Button(
+                            onClick = onDismiss,
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(4.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0E0E0))
+                        ) {
+                            Text(stringResource(id = R.string.no), color = Color.DarkGray, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
+                        
+                        Button(
+                            onClick = onConfirm,
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(4.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = TagGoGreen)
+                        ) {
+                            Text(stringResource(id = R.string.yes), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

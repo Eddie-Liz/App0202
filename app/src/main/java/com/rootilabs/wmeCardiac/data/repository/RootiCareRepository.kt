@@ -93,7 +93,7 @@ class RootiCareRepository(
     suspend fun getCurrentMeasurement(
         institutionId: String,
         patientId: String
-    ): Result<MeasurementInfo> {
+    ): Result<MeasurementInfo?> {
         return try {
             val response = rootiCareApi.getCurrentMeasurementInfo(institutionId, patientId)
             if (response.isSuccessful) {
@@ -103,8 +103,13 @@ class RootiCareRepository(
                     tokenManager.measureRecordId = it.measureRecordId
                     tokenManager.serverDeviceId = it.deviceId
                     Result.success(it)
-                } ?: Result.failure(Exception("Empty response"))
+                } ?: Result.success(null)
+            } else if (response.code() == 404) {
+                Log.d(TAG, "getCurrentMeasurement 404: No active measurement found")
+                Result.success(null)
             } else {
+                val errorMsg = response.errorBody()?.string() ?: ""
+                Log.e(TAG, "getCurrentMeasurement failed: ${response.code()} - $errorMsg")
                 Result.failure(Exception("Get measurement failed: ${response.code()}"))
             }
         } catch (e: Exception) {

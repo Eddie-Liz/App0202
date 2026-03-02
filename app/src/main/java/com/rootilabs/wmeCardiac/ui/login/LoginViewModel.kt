@@ -81,10 +81,16 @@ class LoginViewModel : ViewModel() {
             val measureResult = repository.getCurrentMeasurement(institutionId, patientId)
             Log.d(TAG, "Step 3 getCurrentMeasurement: success=${measureResult.isSuccess}")
 
-            val measurementInfo = measureResult.getOrNull()
-            if (measureResult.isFailure || measurementInfo == null) {
+            if (measureResult.isFailure) {
                 Log.e(TAG, "Measurement failed: ${measureResult.exceptionOrNull()?.message}")
                 uiState = uiState.copy(isLoading = false, error = "MEASUREMENT_FAILED")
+                return
+            }
+
+            val measurementInfo = measureResult.getOrNull()
+            if (measurementInfo == null) {
+                Log.w(TAG, "No measurement info found (null)")
+                uiState = uiState.copy(isLoading = false, error = "NOT_MEASURING")
                 return
             }
 

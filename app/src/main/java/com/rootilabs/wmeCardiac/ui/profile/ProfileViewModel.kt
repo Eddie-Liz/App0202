@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val logoutSuccess: Boolean = false,
+    val unsyncedCount: Int = 0,
     val error: String? = null
 )
 
@@ -19,6 +20,17 @@ class ProfileViewModel : ViewModel() {
         private set
 
     private val repository = ServiceLocator.repository
+
+    init {
+        checkUnsyncedData()
+    }
+
+    fun checkUnsyncedData() {
+        viewModelScope.launch {
+            val count = repository.getUnsyncedCount()
+            uiState = uiState.copy(unsyncedCount = count)
+        }
+    }
 
     fun logout() {
         viewModelScope.launch {

@@ -90,6 +90,7 @@ class MainViewModel : ViewModel() {
 
     init {
         loadEventTags()
+        checkRecordingStatus()
     }
 
     fun loadEventTags() {
@@ -178,12 +179,12 @@ class MainViewModel : ViewModel() {
                 if (institutionId.isNotEmpty() && patientId.isNotEmpty()) {
                     val result = repository.getCurrentMeasurement(institutionId, patientId)
                     val info = result.getOrNull()
-                    if (info != null) {
-                        val serverStatus = info.isMeasuring()
-                        if (uiState.isMeasuring != serverStatus) {
-                            uiState = uiState.copy(isMeasuring = serverStatus)
-                            tokenManager.isMeasuring = serverStatus
-                        }
+                    val serverStatus = info?.isMeasuring() ?: false
+                    
+                    if (uiState.isMeasuring != serverStatus) {
+                        Log.d(TAG, "Recording status sync: local=${uiState.isMeasuring} -> server=$serverStatus")
+                        uiState = uiState.copy(isMeasuring = serverStatus)
+                        tokenManager.isMeasuring = serverStatus
                     }
                 }
             } catch (e: Exception) {
