@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "268754616687",
+    "project_id": "tag-and-go-5f995",
+    "storage_bucket": "tag-and-go-5f995.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:268754616687:android:c84203eb93458f2318e89a",
+        "android_client_info": {
+          "package_name": "com.rootilabs.wmeCardiac"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9xIa4me9kGe7m5tdiyEjENHgC-yUDNGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

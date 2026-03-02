@@ -18,6 +18,7 @@ data class LoginUiState(
 )
 
 enum class ServerRegion(val label: String, val url: String) {
+    DEV("Local Test", "http://192.168.103.17"),
     AP("Asia-Pacific 1", "https://mct-api.rooticare.com"),
     AP2("Asia-Pacific 2", "https://mct2-api.rooticare.com"),
     EU("Europe", "https://mcteu-api.rooticare.com")
@@ -35,11 +36,11 @@ class LoginViewModel : ViewModel() {
 
     var institutionId by mutableStateOf("")
     var patientId by mutableStateOf("")
-    var selectedServer by mutableStateOf(ServerRegion.AP)
+    var selectedServer by mutableStateOf(ServerRegion.DEV)
 
     fun login() {
         if (institutionId.isBlank() || patientId.isBlank()) {
-            uiState = uiState.copy(error = "請填寫 Account ID 和 ID Number")
+            uiState = uiState.copy(error = "FIELDS_REQUIRED")
             return
         }
         viewModelScope.launch {
@@ -51,45 +52,38 @@ class LoginViewModel : ViewModel() {
 
     private suspend fun performLogin() {
         try {
-            uiState = uiState.copy(isLoading = true, error = null, statusMessage = "取得 Token 中...")
+            uiState = uiState.copy(isLoading = true, error = null, statusMessage = "STATUS_TOKEN")
             Log.d(TAG, "=== Login Start === institutionId=$institutionId, patientId=$patientId")
 
             // Step 1: Get Token
             val tokenResult = repository.getToken()
             Log.d(TAG, "Step 1 getToken: success=${tokenResult.isSuccess}")
             if (tokenResult.isFailure) {
-                val msg = "Token 取得失敗: ${tokenResult.exceptionOrNull()?.message}"
-                Log.e(TAG, msg)
-                uiState = uiState.copy(isLoading = false, error = msg)
+                Log.e(TAG, "Token failed: ${tokenResult.exceptionOrNull()?.message}")
+                uiState = uiState.copy(isLoading = false, error = "TOKEN_FAILED")
                 return
             }
 
             // Step 2: Auth Patient
-            uiState = uiState.copy(statusMessage = "登入驗證中...")
+            uiState = uiState.copy(statusMessage = "STATUS_AUTH")
             val authResult = repository.authPatient(institutionId, patientId)
             Log.d(TAG, "Step 2 authPatient: success=${authResult.isSuccess}")
             if (authResult.isFailure) {
                 val cause = authResult.exceptionOrNull()?.message ?: ""
-                val msg = if (cause == "ALREADY_SUBSCRIBED") {
-                    "此帳號已在其他裝置登入，請先登出後再試"
-                } else {
-                    "登入失敗: $cause"
-                }
-                Log.e(TAG, msg)
-                uiState = uiState.copy(isLoading = false, error = msg)
+                Log.e(TAG, "authPatient failed: $cause")
+                uiState = uiState.copy(isLoading = false, error = cause)
                 return
             }
 
             // Step 3: Get Current Measurement
-            uiState = uiState.copy(statusMessage = "取得量測資訊中...")
+            uiState = uiState.copy(statusMessage = "STATUS_MEASUREMENT")
             val measureResult = repository.getCurrentMeasurement(institutionId, patientId)
             Log.d(TAG, "Step 3 getCurrentMeasurement: success=${measureResult.isSuccess}")
-            
+
             val measurementInfo = measureResult.getOrNull()
             if (measureResult.isFailure || measurementInfo == null) {
-                val msg = "量測資訊取得失敗: ${measureResult.exceptionOrNull()?.message}"
-                Log.e(TAG, msg)
-                uiState = uiState.copy(isLoading = false, error = msg)
+                Log.e(TAG, "Measurement failed: ${measureResult.exceptionOrNull()?.message}")
+                uiState = uiState.copy(isLoading = false, error = "MEASUREMENT_FAILED")
                 return
             }
 
@@ -97,33 +91,30 @@ class LoginViewModel : ViewModel() {
             val isMeasuring = measurementInfo.isMeasuring()
             val now = System.currentTimeMillis()
             Log.d(TAG, "Measurement Check: state=${measurementInfo.state}, expectedEndTime=${measurementInfo.expectedEndTime}, now=$now")
-            
+
             ServiceLocator.tokenManager.isMeasuring = isMeasuring
             measurementInfo.deviceId?.let {
                 ServiceLocator.tokenManager.deviceId = it
                 Log.d(TAG, "Server deviceId saved: $it")
             }
-            
+
             if (!isMeasuring) {
-                val msg = "登入失敗：您現在並沒有在錄製中 (state=${measurementInfo.state})"
-                Log.w(TAG, msg)
-                // Block login if not measuring
+                Log.w(TAG, "Not measuring: state=${measurementInfo.state}")
                 repository.unsubscribePatient()
-                uiState = uiState.copy(isLoading = false, error = "您現在並沒有在錄製中，無法登入！")
+                uiState = uiState.copy(isLoading = false, error = "NOT_MEASURING")
                 return
             }
 
             // Validation 2: isVirtualTagMode?
             if (!measurementInfo.isVirtualTagMode()) {
-                val msg = "登入失敗：不支援此模式 (mode=${measurementInfo.mode})"
-                Log.w(TAG, msg)
+                Log.w(TAG, "Unsupported mode: mode=${measurementInfo.mode}")
                 repository.unsubscribePatient()
-                uiState = uiState.copy(isLoading = false, error = "此模式不支援 Android (僅限 VirtualTag)")
+                uiState = uiState.copy(isLoading = false, error = "UNSUPPORTED_MODE")
                 return
             }
 
             // Step 4: Check Total History Count (API #4) & Fetch History (API #5)
-            uiState = uiState.copy(statusMessage = "同步事件標註中...")
+            uiState = uiState.copy(statusMessage = "STATUS_SYNCING")
             val measureId = ServiceLocator.tokenManager.measureRecordId
             Log.d(TAG, "Step 4 measureId=$measureId")
             if (measureId != null) {
@@ -132,7 +123,7 @@ class LoginViewModel : ViewModel() {
                 Log.d(TAG, "Step 4a totalHistoryCount: totalRow=$totalRow")
 
                 if (totalRow > 0) {
-                    uiState = uiState.copy(statusMessage = "下載 $totalRow 筆歷史標註...")
+                    uiState = uiState.copy(statusMessage = "STATUS_DOWNLOADING:$totalRow")
                     val fetchResult = repository.fetchAllEventTagHistory(institutionId, patientId, measureId)
                     Log.d(TAG, "Step 4b fetchHistory: saved=${fetchResult.getOrNull()} records")
                 }
@@ -142,7 +133,7 @@ class LoginViewModel : ViewModel() {
             uiState = uiState.copy(isLoading = false, loginSuccess = true)
         } catch (e: Throwable) {
             Log.e(TAG, "FATAL CRASH during login flow", e)
-            uiState = uiState.copy(isLoading = false, error = "發生嚴重錯誤: ${e.message}")
+            uiState = uiState.copy(isLoading = false, error = "FATAL_ERROR")
         }
     }
 
