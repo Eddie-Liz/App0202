@@ -40,6 +40,8 @@ android {
                     - CH: 支援離線標記，斷網時按鈕仍可正常點擊。
                     - EN: Optimized logout dialog with unsynced data warnings.
                     - CH: 優化登出提醒，包含未上傳資料預警功能。
+                    - EN: Enhanced UI aesthetics and localized dialog strings.
+                    - CH: 優化介面視覺與多國語言對話框內容。
                     - EN: Updated Asia-Pacific 1 server to dev environment.
                     - CH: 更新 Asia-Pacific 1 伺服器為測試開發環境。
                 """.trimIndent()
