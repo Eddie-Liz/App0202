@@ -30,6 +30,18 @@
     <string name="no_records">尚無紀錄</string>
     <string name="loading">載入中...</string>
     <string name="error_occurred">發生錯誤: %1$s</string>
+    <string name="error_already_subscribed">此帳號已在其他裝置登入，請先在該裝置登出後再試。</string>
+    <string name="error_fields_required">請填寫 Account ID 和 ID Number。</string>
+    <string name="error_token_failed">驗證 Token 取得失敗，請再試一次。</string>
+    <string name="error_measurement_failed">量測資訊取得失敗，請再試一次。</string>
+    <string name="error_not_measuring">您目前並未在錄製中，無法登入。</string>
+    <string name="error_unsupported_mode">此模式不支援 Android（僅限 VirtualTag）。</string>
+    <string name="error_fatal">發生嚴重錯誤，請重新啟動應用程式。</string>
+    <string name="status_token">取得 Token 中…</string>
+    <string name="status_auth">登入驗證中…</string>
+    <string name="status_measurement">取得量測資訊中…</string>
+    <string name="status_syncing">同步事件標註中…</string>
+    <string name="status_downloading">下載 %1$d 筆標註中…</string>
     
     <!-- Symptoms -->
     <string name="symptom_chest_pain">胸悶、胸部疼痛</string>
@@ -64,4 +76,6 @@
     <string name="no_intensity_recorded">無記錄強度</string>
     <string name="back_desc">返回</string>
     <string name="medical_clinic">醫療診所:</string>
+    <string name="upload">上傳</string>
+    <string name="you_still_have_data_not_uploaded_confirm_logout">您還有資料尚未上傳，確定登出?</string>
 </resources>

@@ -202,7 +202,7 @@ fun LogoutConfirmationDialog(
                 )
                 
                 if (unsyncedCount > 0) {
-                    // Alert layout with 3 buttons
+                    // Alert layout with 2 buttons (removed "No")
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -223,13 +223,6 @@ fun LogoutConfirmationDialog(
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                         ) {
                             Text(stringResource(id = R.string.logout), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        }
-                        
-                        TextButton(
-                            onClick = onDismiss,
-                            modifier = Modifier.fillMaxWidth().height(48.dp)
-                        ) {
-                            Text(stringResource(id = R.string.no), color = Color.Gray, fontSize = 16.sp)
                         }
                     }
                 } else {
