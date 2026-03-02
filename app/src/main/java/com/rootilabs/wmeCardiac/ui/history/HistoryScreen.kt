@@ -116,12 +116,13 @@ fun HistoryScreen(
                 onClick = { viewModel.retryUnsyncedTags() },
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
-                    .height(56.dp),
+                    .heightIn(min = 52.dp), // Use heightIn for flexibility
                 enabled = !isSyncing,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (hasUnsynced) TagGoGreen else Color(0xFFD3D3D3),
                     contentColor = Color.White
                 ),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 if (isSyncing) {
@@ -129,8 +130,10 @@ fun HistoryScreen(
                 } else {
                     Text(
                         text = stringResource(id = R.string.retry_upload),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Medium
+                        fontSize = 18.sp, // Reduced (24 -> 18)
+                        fontWeight = FontWeight.Medium,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        lineHeight = 22.sp
                     )
                 }
             }
@@ -208,7 +211,8 @@ fun HistoryRow(tag: EventTagDbEntity) {
                     Text(
                         text = stringResource(id = R.string.symptoms_label),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 32.sp,
+                        fontSize = 28.sp, // Reduced (32 -> 28)
+                        lineHeight = 34.sp,
                         color = Color(0xFF424242),
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
@@ -245,7 +249,8 @@ fun HistoryRow(tag: EventTagDbEntity) {
                     Text(
                         text = stringResource(id = R.string.intensity_label),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 32.sp,
+                        fontSize = 28.sp, // Reduced (32 -> 28)
+                        lineHeight = 34.sp,
                         color = Color(0xFF424242),
                         modifier = Modifier.padding(vertical = 12.dp)
                     )

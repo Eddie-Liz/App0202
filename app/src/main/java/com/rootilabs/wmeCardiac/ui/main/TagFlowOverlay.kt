@@ -164,10 +164,10 @@ private fun BoxScope.SymptomSelectionContent(
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
             text = stringResource(id = R.string.symptoms_title),
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             fontWeight = FontWeight.Bold,
-            fontSize = 32.sp,
-            lineHeight = 40.sp,
+            fontSize = 28.sp, // Reduced slightly for longer languages
+            lineHeight = 34.sp,
             color = Color(0xFF424242)
         )
 
@@ -210,10 +210,11 @@ private fun BoxScope.SymptomSelectionContent(
                         
                         Text(
                             text = stringResource(id = symptom.labelResId),
-                            fontSize = 22.sp,
+                            fontSize = 20.sp, // Reduced slightly (22 -> 20)
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF5B5B5B),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            softWrap = true // Ensure multi-line support
                         )
 
                         if (isSelected) {
@@ -255,12 +256,10 @@ private fun BoxScope.SymptomSelectionContent(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = stringResource(id = R.string.symptom_others),
-                    fontSize = 17.sp,
+                    fontSize = 16.sp, // Reduced (17 -> 16)
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF5B5B5B),
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f) // Removed maxLines=1 to allow full display
                 )
             }
             Row(
@@ -289,13 +288,6 @@ private fun BoxScope.SymptomSelectionContent(
                         cursorBrush = androidx.compose.ui.graphics.SolidColor(Color(0xFF424242)),
                         decorationBox = { innerTextField ->
                             Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.fillMaxSize()) {
-                                if (uiState.otherSymptom.isEmpty()) {
-                                    Text(
-                                        text = stringResource(id = R.string.voice_input_hint),
-                                        fontSize = 16.sp,
-                                        color = Color(0xFFBDBDBD)
-                                    )
-                                }
                                 innerTextField()
                             }
                         }
@@ -524,33 +516,52 @@ private fun TagFlowBottomButtons(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp) // Reduced gap for more space
     ) {
         OutlinedButton(
             onClick = onLeft,
-            modifier = Modifier.weight(1f).height(56.dp),
+            modifier = Modifier
+                .weight(1f)
+                .heightIn(min = 52.dp), // Changed fixed height to heightIn
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color(0xFF757575),
                 contentColor = Color.White
             ),
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp), // Add padding for multi-line
             border = null
         ) {
-            Text(leftText, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(
+                leftText, 
+                fontSize = 18.sp, // Reduced (24 -> 18) for better fit
+                fontWeight = FontWeight.Bold,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                lineHeight = 22.sp
+            )
         }
 
         Button(
             onClick = onRight,
-            modifier = Modifier.weight(1f).height(56.dp),
+            modifier = Modifier
+                .weight(1f)
+                .heightIn(min = 52.dp), // Changed fixed height to heightIn
             enabled = rightEnabled,
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = TagGoGreen,
                 disabledContainerColor = Color(0xFFBDBDBD)
             ),
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
             elevation = ButtonDefaults.buttonElevation(0.dp)
         ) {
-            Text(rightText, fontSize = 24.sp, color = Color.White, fontWeight = FontWeight.Bold)
+            Text(
+                rightText, 
+                fontSize = 18.sp, // Reduced (24 -> 18)
+                color = Color.White, 
+                fontWeight = FontWeight.Bold,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                lineHeight = 22.sp
+            )
         }
     }
 }
