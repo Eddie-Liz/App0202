@@ -74,8 +74,8 @@ class RootiCareRepository(
                     Result.failure(Exception(msg))
                 }
             } else if (response.code() == 409) {
-                // Already subscribed on another device → block login
-                Log.w(TAG, "authPatient 409: patient already subscribed on another device, blocking login.")
+                // Another device is actively logged in → block login, do NOT force logout
+                Log.w(TAG, "authPatient 409: another device is logged in, blocking login.")
                 Result.failure(Exception("ALREADY_SUBSCRIBED"))
             } else {
                 val errorBody = response.errorBody()?.string()
@@ -210,20 +210,19 @@ class RootiCareRepository(
         }
 
         return try {
-            // Strategy C (The confirmed winner): POST base path
-            Log.d(TAG, "Attempting Logout (Primary Strategy) - POST base path: inst=$institutionId, patient=$patientId")
-            val response = rootiCareApi.unsubscribePatient(institutionId, patientId)
+            val pushToken = tokenManager.pushToken
+            val request = UnsubscribeRequest(deviceToken = pushToken)
+
+            Log.d(TAG, "Attempting Logout (Primary Strategy) - POST .../unsubscribe: inst=$institutionId, patient=$patientId")
+            val response = rootiCareApi.unsubscribePatientWithSuffix(institutionId, patientId, request)
             
             Log.d(TAG, "Logout result code: ${response.code()}")
             
             if (response.isSuccessful || response.code() == 204) {
                 Log.d(TAG, "Logout success, clearing local data.")
             } else {
-                // Secondary Strategy: POST with /unsubscribe suffix
-                Log.d(TAG, "Primary failed (${response.code()}), trying fallback Strategy A (POST .../unsubscribe)")
-                val pushToken = tokenManager.pushToken
-                val request = UnsubscribeRequest(deviceToken = pushToken)
-                val fallbackResponse = rootiCareApi.unsubscribePatientWithSuffix(institutionId, patientId, request)
+                Log.d(TAG, "Primary strategy failed (${response.code()}), trying fallback Strategy C (POST base path)")
+                val fallbackResponse = rootiCareApi.unsubscribePatient(institutionId, patientId)
                 Log.d(TAG, "Fallback Strategy result: ${fallbackResponse.code()}")
             }
 
