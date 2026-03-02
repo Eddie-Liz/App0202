@@ -53,7 +53,11 @@ fun AppNavigation(startDestination: String = "login") {
             composable("profile") {
                 com.rootilabs.wmeCardiac.ui.profile.ProfileScreen(
                     onBack = { navController.popBackStack() },
-                    onLogoutSuccess = { navController.navigate("login") { popUpTo("main") { inclusive = true } } }
+                    onLogoutSuccess = { navController.navigate("login") { popUpTo("main") { inclusive = true } } },
+                    onUploadClick = {
+                        navController.popBackStack() // close profile
+                        navController.navigate("history")
+                    }
                 )
             }
         }
