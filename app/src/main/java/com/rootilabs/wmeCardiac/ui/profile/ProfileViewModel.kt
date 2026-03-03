@@ -33,10 +33,13 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun logout() {
+        if (uiState.isLoading) {
+            android.util.Log.w("ProfileViewModel", "logout() called while already in progress, ignoring.")
+            return
+        }
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
             try {
-                // Perform full logout (including unsubscribe)
                 val result = repository.unsubscribePatient()
                 if (result.isSuccess) {
                     uiState = uiState.copy(isLoading = false, logoutSuccess = true)
