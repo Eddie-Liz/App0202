@@ -233,7 +233,7 @@ class RootiCareRepository(
                     Log.d(TAG, "Fallback Strategy result: ${fallbackResponse.code()}")
                 }
             } catch (e: Exception) {
-                Log.w(TAG, "Logout: Network error or server unreachable. Scheduling background cleanup.")
+                Log.w(TAG, "Logout: Network error (${e.javaClass.simpleName}: ${e.message}). Scheduling background cleanup.")
                 // Schedule WorkManager to clean up when network is back
                 try {
                     val workRequest = OneTimeWorkRequestBuilder<com.rootilabs.wmeCardiac.data.worker.LogoutWorker>()
