@@ -119,19 +119,32 @@ class LoginViewModel : ViewModel() {
                 return
             }
 
-            // Step 4: Check Total History Count (API #4) & Fetch History (API #5)
+            // Step 4: Check measureRecordId - same session or new session?
+            val oldMeasureId = ServiceLocator.tokenManager.measureRecordId
+            val newMeasureId = measurementInfo.measureRecordId
+            Log.d(TAG, "Step 4 measureRecordId check: old=$oldMeasureId, new=$newMeasureId")
+
+            if (oldMeasureId != null && newMeasureId != null && oldMeasureId != newMeasureId) {
+                // Different measureRecordId → different measurement session (possibly same patient name but different record)
+                Log.w(TAG, "measureRecordId changed ($oldMeasureId → $newMeasureId), clearing old local tags")
+                repository.clearLocalEventTags()
+            } else if (oldMeasureId == newMeasureId) {
+                Log.d(TAG, "Same measureRecordId, keeping local data")
+            }
+
+            // Step 5: Check Total History Count (API #4) & Fetch History (API #5)
             uiState = uiState.copy(statusMessage = "STATUS_SYNCING")
             val measureId = ServiceLocator.tokenManager.measureRecordId
-            Log.d(TAG, "Step 4 measureId=$measureId")
+            Log.d(TAG, "Step 5 measureId=$measureId")
             if (measureId != null) {
                 val countResult = repository.getTotalHistoryCount(institutionId, patientId, measureId)
                 val totalRow = countResult.getOrNull() ?: 0
-                Log.d(TAG, "Step 4a totalHistoryCount: totalRow=$totalRow")
+                Log.d(TAG, "Step 5a totalHistoryCount: totalRow=$totalRow")
 
                 if (totalRow > 0) {
                     uiState = uiState.copy(statusMessage = "STATUS_DOWNLOADING:$totalRow")
                     val fetchResult = repository.fetchAllEventTagHistory(institutionId, patientId, measureId)
-                    Log.d(TAG, "Step 4b fetchHistory: saved=${fetchResult.getOrNull()} records")
+                    Log.d(TAG, "Step 5b fetchHistory: saved=${fetchResult.getOrNull()} records")
                 }
             }
 

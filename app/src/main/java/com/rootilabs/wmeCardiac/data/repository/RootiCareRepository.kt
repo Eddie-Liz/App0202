@@ -58,22 +58,27 @@ class RootiCareRepository(
             val response = rootiCareApi.authPatient(institutionId, patientId)
             Log.d(TAG, "authPatient response code: ${response.code()}")
             
-            if (response.isSuccessful || response.code() == 409) {
-                val body = response.body() ?: AuthPatientResponse(vendorName = "RootiCare Patient")
-                
-                if (response.code() == 409) {
-                    Log.w(TAG, "authPatient 409: Patient already subscribed, ignoring and proceeding (User request: Block=0).")
-                }
-                
-                Log.d(TAG, "authPatient response: vendorName=${body.vendorName}, subscribedBefore=${body.subscribedBefore}")
+            if (response.isSuccessful) {
+                val body = response.body()
+                Log.d(TAG, "authPatient response: vendorName=${body?.vendorName}, subscribedBefore=${body?.subscribedBefore}")
 
-                tokenManager.institutionId = institutionId
-                tokenManager.patientId = patientId
-                tokenManager.vendorName = body.vendorName ?: "RootiCare"
-                tokenManager.isLoggedIn = true
-                tokenManager.loginTime = System.currentTimeMillis()
-                Log.d(TAG, "authPatient processed: vendorName=${tokenManager.vendorName}")
-                Result.success(body)
+                if (body?.vendorName != null) {
+                    tokenManager.institutionId = institutionId
+                    tokenManager.patientId = patientId
+                    tokenManager.vendorName = body.vendorName
+                    tokenManager.isLoggedIn = true
+                    tokenManager.loginTime = System.currentTimeMillis()
+                    Log.d(TAG, "authPatient success: vendorName=${body.vendorName}")
+                    Result.success(body)
+                } else {
+                    val msg = "登入失敗：無效的回應內容"
+                    Log.e(TAG, msg)
+                    Result.failure(Exception(msg))
+                }
+            } else if (response.code() == 409) {
+                // Another device is actively logged in
+                Log.w(TAG, "authPatient 409: another device is logged in.")
+                Result.failure(Exception("ALREADY_SUBSCRIBED"))
             } else {
                 val errorBody = response.errorBody()?.string()
                 Log.e(TAG, "authPatient failed: HTTP ${response.code()} - $errorBody")
@@ -309,6 +314,11 @@ class RootiCareRepository(
     suspend fun clearLocalData() {
         database.eventTagDao().clearAll()
         tokenManager.clearAll()
+    }
+
+    suspend fun clearLocalEventTags() {
+        Log.d(TAG, "clearLocalEventTags: clearing all local event tags")
+        database.eventTagDao().clearAll()
     }
 
     // ---- Local DB ----
