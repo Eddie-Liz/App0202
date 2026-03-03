@@ -135,7 +135,7 @@ class LoginViewModel : ViewModel() {
                 }
             }
 
-            Log.d(TAG, "=== Login Success ===")
+            Log.d(TAG, "=== Login Success === measureRecordId=${ServiceLocator.tokenManager.measureRecordId}")
             uiState = uiState.copy(isLoading = false, loginSuccess = true)
         } catch (e: Throwable) {
             Log.e(TAG, "FATAL CRASH during login flow", e)

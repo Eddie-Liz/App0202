@@ -204,6 +204,7 @@ class MainViewModel : ViewModel() {
     fun onTagPressed() {
         val now = System.currentTimeMillis() // Pure UTC
         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        Log.d(TAG, "onTagPressed: measureRecordId=${tokenManager.measureRecordId}")
         uiState = uiState.copy(
             tagFlowStep = TagFlowStep.SYMPTOM_SELECTION,
             tagTime = now,
