@@ -49,6 +49,7 @@ object ServiceLocator {
     }
 
     fun reinitWithBaseUrl(baseUrl: String) {
+        android.util.Log.d("ServiceLocator", "reinitWithBaseUrl: $baseUrl")
         initApis(baseUrl)
         repository = RootiCareRepository(
             authApi = authApi,
@@ -60,6 +61,7 @@ object ServiceLocator {
     }
 
     private fun initApis(baseUrl: String) {
+        android.util.Log.d("ServiceLocator", "initApis: building Retrofit with baseUrl=$baseUrl")
         moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
