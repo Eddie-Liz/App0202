@@ -18,8 +18,8 @@ android {
         applicationId = "com.rootilabs.wmeCardiac"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -33,7 +33,7 @@ android {
             firebaseAppDistribution {
                 artifactType = "APK"
                 releaseNotes = """
-                    [v1.0.1 Update / 更新說明]
+                    [v1.0.2 Update / 更新說明]
                     - EN: Added background sync to prevent 409 login conflicts.
                     - CH: 新增背景同步功能，解決登入 409 衝突問題。
                     - EN: Enabled offline tagging; buttons remain active without network.
@@ -42,8 +42,14 @@ android {
                     - CH: 優化登出提醒，包含未上傳資料預警功能。
                     - EN: Enhanced UI aesthetics and localized dialog strings.
                     - CH: 優化介面視覺與多國語言對話框內容。
-                    - EN: Updated Asia-Pacific 1 server to dev environment.
-                    - CH: 更新 Asia-Pacific 1 伺服器為測試開發環境。
+                    - EN: Fixed server URL routing (all ViewModels now use updated server after switch).
+                    - CH: 修正伺服器切換後所有頁面仍打舊 URL 的問題。
+                    - EN: Removed emulator URL (10.0.2.2), default is now official AP server.
+                    - CH: 移除模擬器 URL，預設改為官方 AP 伺服器。
+                    - EN: Fixed duplicate logout API calls.
+                    - CH: 修正登出 API 被重複呼叫兩次的問題。
+                    - EN: Added measureRecordId comparison on login to detect new measurement sessions.
+                    - CH: 登入時比對 measureRecordId，自動偵測是否為新的量測 session。
                 """.trimIndent()
             }
         }
