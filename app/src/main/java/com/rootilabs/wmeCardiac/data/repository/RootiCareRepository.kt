@@ -102,6 +102,7 @@ class RootiCareRepository(
                 val body = response.body()
                 Log.d(TAG, "getCurrentMeasurement success: $body")
                 body?.let {
+                    Log.d(TAG, "measureRecordId from server: ${it.measureRecordId}")
                     tokenManager.measureRecordId = it.measureRecordId
                     tokenManager.serverDeviceId = it.deviceId
                     Result.success(it)
