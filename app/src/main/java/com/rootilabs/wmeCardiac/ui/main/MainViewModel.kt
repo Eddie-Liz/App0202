@@ -80,7 +80,7 @@ class MainViewModel : ViewModel() {
         private const val TAG = "MainViewModel"
     }
 
-    private val repository = ServiceLocator.repository
+    private val repository get() = ServiceLocator.repository
     private val tokenManager = ServiceLocator.tokenManager
 
     var uiState by mutableStateOf(MainUiState())

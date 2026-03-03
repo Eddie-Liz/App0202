@@ -19,7 +19,7 @@ class ProfileViewModel : ViewModel() {
     var uiState by mutableStateOf(ProfileUiState())
         private set
 
-    private val repository = ServiceLocator.repository
+    private val repository get() = ServiceLocator.repository
 
     init {
         checkUnsyncedData()

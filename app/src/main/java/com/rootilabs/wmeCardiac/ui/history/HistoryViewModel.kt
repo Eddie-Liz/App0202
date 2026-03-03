@@ -10,7 +10,7 @@ import com.rootilabs.wmeCardiac.di.ServiceLocator
 import kotlinx.coroutines.launch
 
 class HistoryViewModel : ViewModel() {
-    private val repository = ServiceLocator.repository
+    private val repository get() = ServiceLocator.repository
 
     var tags by mutableStateOf<List<EventTagDbEntity>>(emptyList())
         private set
