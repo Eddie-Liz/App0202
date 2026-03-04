@@ -310,16 +310,13 @@ class RootiCareRepository(
                     Log.w(TAG, "Duplicate key detected — tag already on server, marking as synced")
                     val updatedTags = tags.map { it.copy(isEdit = false, isRead = true) }
                     database.eventTagDao().insertAll(updatedTags)
-                    return@try Result.success(
-                        com.rootilabs.wmeCardiac.data.model.AddVirtualTagsResponse(
-                            addedSize = tags.size,
-                            failedSize = 0
-                        )
+                    Result.success(
+                        AddVirtualTagsResponse(addedSize = tags.size, failedSize = 0)
                     )
+                } else {
+                    val apiError = parseError(errorBody)
+                    Result.failure(Exception(apiError))
                 }
-
-                val apiError = parseError(errorBody)
-                Result.failure(Exception(apiError))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Upload exception", e)
