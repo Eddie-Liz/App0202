@@ -29,6 +29,18 @@
     <string name="no_records">Sin registros</string>
     <string name="loading">Cargando...</string>
     <string name="error_occurred">Ocurrió un error: %1$s</string>
+    <string name="error_already_subscribed">Esta cuenta ya está iniciada en otro dispositivo. Por favor, ciérrala sesión primero.</string>
+    <string name="error_fields_required">Por favor, complete el ID de cuenta y el número de ID.</string>
+    <string name="error_token_failed">No se pudo obtener el token de autenticación. Inténtelo de nuevo.</string>
+    <string name="error_measurement_failed">No se pudo obtener la información de medición. Inténtelo de nuevo.</string>
+    <string name="error_not_measuring">No está grabando actualmente. El inicio de sesión no está disponible.</string>
+    <string name="error_unsupported_mode">Este modo no es compatible con Android (solo VirtualTag).</string>
+    <string name="error_fatal">Se produjo un error crítico. Reinicie la aplicación.</string>
+    <string name="status_token">Obteniendo token…</string>
+    <string name="status_auth">Autenticando…</string>
+    <string name="status_measurement">Obteniendo información de medición…</string>
+    <string name="status_syncing">Sincronizando etiquetas de eventos…</string>
+    <string name="status_downloading">Descargando %1$d etiquetas…</string>
 
     <!-- Symptoms -->
     <string name="symptom_chest_pain">Dolor/Opresión en el pecho</string>

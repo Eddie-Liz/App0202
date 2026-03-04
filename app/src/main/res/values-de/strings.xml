@@ -29,6 +29,18 @@
     <string name="no_records">Keine Einträge</string>
     <string name="loading">Laden...</string>
     <string name="error_occurred">Ein Fehler ist aufgetreten: %1$s</string>
+    <string name="error_already_subscribed">Dieses Konto ist bereits auf einem anderen Gerät angemeldet. Bitte zuerst dort abmelden.</string>
+    <string name="error_fields_required">Bitte Konto-ID und ID-Nummer eingeben.</string>
+    <string name="error_token_failed">Authentifizierungstoken konnte nicht abgerufen werden. Bitte erneut versuchen.</string>
+    <string name="error_measurement_failed">Messdaten konnten nicht abgerufen werden. Bitte erneut versuchen.</string>
+    <string name="error_not_measuring">Sie nehmen derzeit keine Aufzeichnung vor. Anmeldung nicht möglich.</string>
+    <string name="error_unsupported_mode">Dieser Modus wird auf Android nicht unterstützt (nur VirtualTag).</string>
+    <string name="error_fatal">Ein kritischer Fehler ist aufgetreten. Bitte die App neu starten.</string>
+    <string name="status_token">Token wird abgerufen…</string>
+    <string name="status_auth">Authentifizierung…</string>
+    <string name="status_measurement">Messdaten werden abgerufen…</string>
+    <string name="status_syncing">Ereignismarkierungen werden synchronisiert…</string>
+    <string name="status_downloading">%1$d Markierungen werden heruntergeladen…</string>
 
     <!-- Symptoms -->
     <string name="symptom_chest_pain">Brustschmerzen/Engegefühl</string>

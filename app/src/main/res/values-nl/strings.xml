@@ -29,6 +29,18 @@
     <string name="no_records">Geen gegevens</string>
     <string name="loading">Laden...</string>
     <string name="error_occurred">Er is een fout opgetreden: %1$s</string>
+    <string name="error_already_subscribed">Dit account is al ingelogd op een ander apparaat. Log daar eerst uit en probeer het opnieuw.</string>
+    <string name="error_fields_required">Vul het account-ID en het ID-nummer in.</string>
+    <string name="error_token_failed">Authenticatietoken kon niet worden opgehaald. Probeer het opnieuw.</string>
+    <string name="error_measurement_failed">Meetinformatie kon niet worden opgehaald. Probeer het opnieuw.</string>
+    <string name="error_not_measuring">U neemt momenteel niet op. Inloggen is niet beschikbaar.</string>
+    <string name="error_unsupported_mode">Deze modus wordt niet ondersteund op Android (alleen VirtualTag).</string>
+    <string name="error_fatal">Er is een kritieke fout opgetreden. Start de app opnieuw.</string>
+    <string name="status_token">Token ophalen…</string>
+    <string name="status_auth">Authenticeren…</string>
+    <string name="status_measurement">Meetinformatie ophalen…</string>
+    <string name="status_syncing">Gebeurtenistags synchroniseren…</string>
+    <string name="status_downloading">%1$d tags downloaden…</string>
 
     <!-- Symptoms -->
     <string name="symptom_chest_pain">Pijn op de borst/benauwdheid</string>

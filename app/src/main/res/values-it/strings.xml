@@ -29,6 +29,18 @@
     <string name="no_records">Nessun record</string>
     <string name="loading">Caricamento...</string>
     <string name="error_occurred">Si è verificato un errore: %1$s</string>
+    <string name="error_already_subscribed">Questo account ha già effettuato l\'accesso su un altro dispositivo. Effettua prima il logout da quel dispositivo.</string>
+    <string name="error_fields_required">Inserire l\'ID account e il numero ID.</string>
+    <string name="error_token_failed">Impossibile ottenere il token di autenticazione. Riprovare.</string>
+    <string name="error_measurement_failed">Impossibile recuperare le informazioni di misurazione. Riprovare.</string>
+    <string name="error_not_measuring">Non si sta registrando. Accesso non disponibile.</string>
+    <string name="error_unsupported_mode">Questa modalità non è supportata su Android (solo VirtualTag).</string>
+    <string name="error_fatal">Si è verificato un errore critico. Riavviare l\'app.</string>
+    <string name="status_token">Recupero token…</string>
+    <string name="status_auth">Autenticazione…</string>
+    <string name="status_measurement">Recupero informazioni di misurazione…</string>
+    <string name="status_syncing">Sincronizzazione etichette eventi…</string>
+    <string name="status_downloading">Download di %1$d etichette…</string>
 
     <!-- Symptoms -->
     <string name="symptom_chest_pain">Dolore/Oppressione toracica</string>

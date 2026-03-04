@@ -29,6 +29,18 @@
     <string name="no_records">Aucun enregistrement</string>
     <string name="loading">Chargement...</string>
     <string name="error_occurred">Une erreur est survenue : %1$s</string>
+    <string name="error_already_subscribed">Ce compte est d\'jà connecté sur un autre appareil. Veuillez d\'abord vous déconnecter de cet appareil.</string>
+    <string name="error_fields_required">Veuillez renseigner l\'identifiant de compte et le numéro d\'ID.</string>
+    <string name="error_token_failed">Impossible d\'obtenir le jeton d\'authentification. Veuillez réessayer.</string>
+    <string name="error_measurement_failed">Impossible de récupérer les informations de mesure. Veuillez réessayer.</string>
+    <string name="error_not_measuring">Vous n\'êtes pas en cours d\'enregistrement. La connexion n\'est pas disponible.</string>
+    <string name="error_unsupported_mode">Ce mode n\'est pas pris en charge sur Android (VirtualTag uniquement).</string>
+    <string name="error_fatal">Une erreur critique est survenue. Veuillez redémarrer l\'application.</string>
+    <string name="status_token">Récupération du jeton…</string>
+    <string name="status_auth">Authentification…</string>
+    <string name="status_measurement">Récupération des informations de mesure…</string>
+    <string name="status_syncing">Synchronisation des étiquettes d\'événements…</string>
+    <string name="status_downloading">Téléchargement de %1$d étiquettes…</string>
 
     <!-- Symptoms -->
     <string name="symptom_chest_pain">Douleur/Oppression thoracique</string>

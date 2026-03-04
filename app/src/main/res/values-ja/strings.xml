@@ -29,6 +29,18 @@
     <string name="no_records">記録なし</string>
     <string name="loading">読み込み中...</string>
     <string name="error_occurred">エラーが発生しました: %1$s</string>
+    <string name="error_already_subscribed">このアカウントは別の端末でログイン中です。先にそちらでログアウトしてください。</string>
+    <string name="error_fields_required">アカウントIDとID番号を入力してください。</string>
+    <string name="error_token_failed">認証トークンを取得できませんでした。もう一度お試しください。</string>
+    <string name="error_measurement_failed">測定情報を取得できませんでした。もう一度お試しください。</string>
+    <string name="error_not_measuring">現在、記録中ではありません。ログインできません。</string>
+    <string name="error_unsupported_mode">このモードはAndroidでサポートされていません（VirtualTagのみ）。</string>
+    <string name="error_fatal">重大なエラーが発生しました。アプリを再起動してください。</string>
+    <string name="status_token">トークンを取得中…</string>
+    <string name="status_auth">認証中…</string>
+    <string name="status_measurement">測定情報を取得中…</string>
+    <string name="status_syncing">イベントタグを同期中…</string>
+    <string name="status_downloading">%1$d 件のタグをダウンロード中…</string>
 
     <!-- Symptoms -->
     <string name="symptom_chest_pain">胸の痛み・圧迫感</string>
