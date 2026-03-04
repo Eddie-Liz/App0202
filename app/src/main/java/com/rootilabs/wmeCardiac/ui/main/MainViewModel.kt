@@ -181,14 +181,28 @@ class MainViewModel : ViewModel() {
                     if (result.isSuccess) {
                         val info = result.getOrNull()
                         val serverStatus = info?.isMeasuring() ?: false
-                        
-                        if (uiState.isMeasuring != serverStatus) {
+                        val serverMeasureId = info?.measureRecordId
+                        val localMeasureId = tokenManager.measureRecordId
+
+                        Log.d(TAG, "checkRecordingStatus: serverStatus=$serverStatus, serverMeasureId=$serverMeasureId, localMeasureId=$localMeasureId")
+
+                        // If measureRecordId changed → different session, treat as NOT_MEASURING
+                        val isNewSession = serverStatus
+                            && serverMeasureId != null
+                            && localMeasureId != null
+                            && serverMeasureId != localMeasureId
+
+                        if (isNewSession) {
+                            Log.w(TAG, "measureRecordId changed ($localMeasureId → $serverMeasureId), treating as NOT_MEASURING")
+                            uiState = uiState.copy(isMeasuring = false)
+                            tokenManager.isMeasuring = false
+                        } else if (uiState.isMeasuring != serverStatus) {
                             Log.d(TAG, "Recording status sync: local=${uiState.isMeasuring} -> server=$serverStatus")
                             uiState = uiState.copy(isMeasuring = serverStatus)
                             tokenManager.isMeasuring = serverStatus
                         }
                     } else {
-                        // Network error or server unreachable -> keep current state to allow offline tagging
+                        // Network error or server unreachable → keep current state to allow offline tagging
                         Log.w(TAG, "checkRecordingStatus failed, keeping current local state")
                     }
                 }
