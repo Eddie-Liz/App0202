@@ -18,8 +18,8 @@ android {
         applicationId = "com.rootilabs.wmeCardiac"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.0.2"
+        versionCode = 4
+        versionName = "1.0.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -33,23 +33,19 @@ android {
             firebaseAppDistribution {
                 artifactType = "APK"
                 releaseNotes = """
-                    [v1.0.2 Update / 更新說明]
-                    - EN: Added background sync to prevent 409 login conflicts.
-                    - CH: 新增背景同步功能，解決登入 409 衝突問題。
-                    - EN: Enabled offline tagging; buttons remain active without network.
-                    - CH: 支援離線標記，斷網時按鈕仍可正常點擊。
-                    - EN: Optimized logout dialog with unsynced data warnings.
-                    - CH: 優化登出提醒，包含未上傳資料預警功能。
-                    - EN: Enhanced UI aesthetics and localized dialog strings.
-                    - CH: 優化介面視覺與多國語言對話框內容。
-                    - EN: Fixed server URL routing (all ViewModels now use updated server after switch).
-                    - CH: 修正伺服器切換後所有頁面仍打舊 URL 的問題。
-                    - EN: Removed emulator URL (10.0.2.2), default is now official AP server.
-                    - CH: 移除模擬器 URL，預設改為官方 AP 伺服器。
-                    - EN: Fixed duplicate logout API calls.
-                    - CH: 修正登出 API 被重複呼叫兩次的問題。
-                    - EN: Added measureRecordId comparison on login to detect new measurement sessions.
-                    - CH: 登入時比對 measureRecordId，自動偵測是否為新的量測 session。
+                    [v1.0.3 Bug Fix / 修正說明]
+                    - EN: Fixed Tag button still enabled after recording session is deleted and recreated with same patient name.
+                    - CH: 修正錄製刪除後重新建立同名 session，Tag 按鈕仍可點擊的問題。
+                    - EN: Fixed measureRecordId comparison reading wrong value (after API overwrites it).
+                    - CH: 修正 measureRecordId 比對邏輯讀取到已被覆寫的新值，導致偵測失效。
+                    - EN: Tag button now defaults to disabled on app restart; only enabled after server confirms active session.
+                    - CH: App 重啟後 Tag 按鈕預設禁用，待 API 確認量測中才解鎖，消除重啟空窗期。
+                    - EN: Polling interval reduced from 10s to 3s for faster session change detection.
+                    - CH: 縮短狀態輪詢間隔（10 秒→3 秒），更即時偵測 session 狀態變化。
+                    - EN: Fixed duplicate upload race condition in tag confirmation flow.
+                    - CH: 修正 Tag 確認時雙重上傳的競態問題。
+                    - EN: HTTP 500 DuplicateKeyException now treated as already-synced to stop infinite retry.
+                    - CH: 伺服器回傳 500 重複鍵錯誤時，自動標記為已同步，停止無限重試。
                 """.trimIndent()
             }
         }
