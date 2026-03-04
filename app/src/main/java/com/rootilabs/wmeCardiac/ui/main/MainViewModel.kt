@@ -59,7 +59,7 @@ enum class TagFlowStep {
 
 data class MainUiState(
     val isLoading: Boolean = false,
-    val isMeasuring: Boolean = true,
+    val isMeasuring: Boolean = false,
     val eventTags: List<EventTagDbEntity> = emptyList(),
     val lastTagTime: String? = null,
     val logoutSuccess: Boolean = false,
@@ -113,8 +113,8 @@ class MainViewModel : ViewModel() {
                     hasUnsyncedTags = unsyncedCount > 0,
                     showSyncErrorBadge = uiState.showSyncErrorBadge && unsyncedCount > 0,
                     lastTagTime = lastTime,
-                    loginTimeDisplay = loginTimeStr,
-                    isMeasuring = isMeasuring
+                    loginTimeDisplay = loginTimeStr
+                    // Note: isMeasuring is controlled ONLY by checkRecordingStatus()
                 )
 
                 if (unsyncedCount > 0) {
