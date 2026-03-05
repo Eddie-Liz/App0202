@@ -143,8 +143,8 @@ class LoginViewModel : ViewModel() {
 
             ServiceLocator.tokenManager.isMeasuring = isMeasuring
             measurementInfo.deviceId?.let {
-                ServiceLocator.tokenManager.deviceId = it
-                Log.d(TAG, "Server deviceId saved: $it")
+                ServiceLocator.tokenManager.serverDeviceId = it
+                Log.d(TAG, "Server hardware deviceId (Rx) saved: $it")
             }
 
             if (!isMeasuring) {

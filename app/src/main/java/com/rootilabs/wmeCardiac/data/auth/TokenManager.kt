@@ -24,11 +24,11 @@ class TokenManager(private val context: Context) {
         get() = prefs.getString(KEY_SERVER_DEVICE_ID, null)
         set(value) = prefs.edit().putString(KEY_SERVER_DEVICE_ID, value).apply()
 
-    var deviceId: String
+    val deviceId: String
         get() {
             var id = prefs.getString(KEY_DEVICE_ID, null)
             if (id == null) {
-                // Use ANDROID_ID for stability across reinstalls on the same physical device
+                // Use ANDROID_ID for stability across reinstalls
                 id = android.provider.Settings.Secure.getString(
                     context.contentResolver,
                     android.provider.Settings.Secure.ANDROID_ID
@@ -37,7 +37,6 @@ class TokenManager(private val context: Context) {
             }
             return id
         }
-        set(value) = prefs.edit().putString(KEY_DEVICE_ID, value).apply()
 
     var pushToken: String
         get() {
