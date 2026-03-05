@@ -83,12 +83,13 @@ class MainViewModel : ViewModel() {
     private val repository get() = ServiceLocator.repository
     private val tokenManager = ServiceLocator.tokenManager
 
-    var uiState by mutableStateOf(MainUiState())
+    var uiState by mutableStateOf(MainUiState(isMeasuring = tokenManager.isMeasuring))
         private set
 
     private var isSyncing = false
 
     init {
+        Log.d(TAG, "MainViewModel init: isMeasuring=${tokenManager.isMeasuring}, isLoggedIn=${tokenManager.isLoggedIn}, measureRecordId=${tokenManager.measureRecordId}")
         loadEventTags()
         checkRecordingStatus()
     }
@@ -113,10 +114,7 @@ class MainViewModel : ViewModel() {
                     hasUnsyncedTags = unsyncedCount > 0,
                     showSyncErrorBadge = uiState.showSyncErrorBadge && unsyncedCount > 0,
                     lastTagTime = lastTime,
-                    loginTimeDisplay = loginTimeStr,
-                    // Restore previous isMeasuring state immediately from cache.
-                    // checkRecordingStatus() will correct this if the server says otherwise.
-                    isMeasuring = isMeasuring
+                    loginTimeDisplay = loginTimeStr
                 )
 
                 if (unsyncedCount > 0) {

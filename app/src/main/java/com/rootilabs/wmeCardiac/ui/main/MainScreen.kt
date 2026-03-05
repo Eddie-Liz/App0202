@@ -361,7 +361,9 @@ fun MainScreen(
                             TagButton(
                                 isMeasuring = uiState.isMeasuring,
                                 onClick = { viewModel.onTagPressed() },
-                                modifier = Modifier.offset(y = (-10).dp)
+                                modifier = Modifier
+                                    .offset(y = (-10).dp)
+                                    .zIndex(1f) // Ensure button is on top of the image below
                             )
 
                             Image(
