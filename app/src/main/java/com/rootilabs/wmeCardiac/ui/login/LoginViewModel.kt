@@ -18,7 +18,7 @@ data class LoginUiState(
 )
 
 enum class ServerRegion(val label: String, val url: String) {
-    AP("Asia-Pacific 1", "http://192.168.103.17:8080/"),
+    AP("Asia-Pacific 1", "https://mct-api.rooticare.com/"),
     AP2("Asia-Pacific 2", "https://mct2-api.rooticare.com/"),
     EU("Europe", "https://mcteu-api.rooticare.com/")
 }
@@ -155,11 +155,15 @@ class LoginViewModel : ViewModel() {
             }
 
             if (!isMeasuring) {
-                Log.w(TAG, "Login: Server says NOT_MEASURING (state=${measurementInfo.state}), but allowing login to proceed.")
+                Log.w(TAG, "Login blocked: Server says NOT_MEASURING (state=${measurementInfo.state})")
+                uiState = uiState.copy(isLoading = false, error = "NOT_MEASURING")
+                return
             }
 
             if (!measurementInfo.isVirtualTagMode()) {
-                Log.w(TAG, "Login: Server says mode is NOT VirtualTag (mode=${measurementInfo.mode}), but allowing login to proceed.")
+                Log.w(TAG, "Login blocked: Server says mode is NOT VirtualTag (mode=${measurementInfo.mode})")
+                uiState = uiState.copy(isLoading = false, error = "UNSUPPORTED_MODE")
+                return
             }
 
             // Step 4: Check measureRecordId - same session or new session?

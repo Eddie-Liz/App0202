@@ -19,9 +19,12 @@ data class MeasurementInfo(
         
         // Add 2-minute buffer for clock drift
         val bufferMillis = 120_000L
-        val isOk = s == STATE_MEASURING
-            && et != 0L
-            && now < (endTimeMillis + bufferMillis)
+        
+        // Allow both STATE_MEASURING (0) and state 10 as active measuring states
+        val isValidState = s == STATE_MEASURING || s == 10
+        val isTimeValid = et != 0L && now < (endTimeMillis + bufferMillis)
+        
+        val isOk = isValidState && isTimeValid
         
         if (!isOk) {
             android.util.Log.w("MeasurementInfo", "isMeasuring=false: state=$s, endTime=$endTimeMillis, now=$now, buffer=$bufferMillis")
