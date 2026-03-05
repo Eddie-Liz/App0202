@@ -208,6 +208,8 @@ class MainViewModel : ViewModel() {
                             if (serverStatus) {
                                 if (serverMeasureId != localMeasureId) {
                                     Log.i(TAG, "Syncing measureRecordId from server: $localMeasureId -> $serverMeasureId")
+                                    // Clear local tags as this is a new measurement session
+                                    repository.clearLocalEventTags()
                                     tokenManager.measureRecordId = serverMeasureId
                                 }
                                 if (!uiState.isMeasuring) {

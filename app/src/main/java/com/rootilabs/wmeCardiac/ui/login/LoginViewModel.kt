@@ -155,13 +155,15 @@ class LoginViewModel : ViewModel() {
             }
 
             if (!isMeasuring) {
-                Log.w(TAG, "Login blocked: Server says NOT_MEASURING (state=${measurementInfo.state})")
+                Log.w(TAG, "Login blocked: Server says NOT_MEASURING (state=${measurementInfo.state}). Cleaning up.")
+                repository.unsubscribePatient()
                 uiState = uiState.copy(isLoading = false, error = "NOT_MEASURING")
                 return
             }
 
             if (!measurementInfo.isVirtualTagMode()) {
-                Log.w(TAG, "Login blocked: Server says mode is NOT VirtualTag (mode=${measurementInfo.mode})")
+                Log.w(TAG, "Login blocked: Server says mode is NOT VirtualTag (mode=${measurementInfo.mode}). Cleaning up.")
+                repository.unsubscribePatient()
                 uiState = uiState.copy(isLoading = false, error = "UNSUPPORTED_MODE")
                 return
             }
@@ -169,18 +171,17 @@ class LoginViewModel : ViewModel() {
             // Step 4: Check measureRecordId - same session or new session?
             val newMeasureId = measurementInfo.measureRecordId
             
-            // Explicitly sync the ID only AFTER we are past the 409 check and proceeding with login
-            ServiceLocator.tokenManager.measureRecordId = newMeasureId
-            
             Log.d(TAG, "Step 4 measureRecordId check: old=$oldMeasureId, new=$newMeasureId")
 
-            if (oldMeasureId != null && newMeasureId != null && oldMeasureId != newMeasureId) {
-                // Different measureRecordId → different measurement session
-                Log.w(TAG, "measureRecordId changed ($oldMeasureId → $newMeasureId), clearing old local tags")
+            if (newMeasureId != oldMeasureId) {
+                // Different measureRecordId (including transition from null to non-null) 
+                // → definitely a new session for this device
+                Log.w(TAG, "New session detected ($oldMeasureId -> $newMeasureId), clearing local event tags")
                 repository.clearLocalEventTags()
-            } else if (oldMeasureId == newMeasureId) {
-                Log.d(TAG, "Same measureRecordId, keeping local data")
             }
+            
+            // Sync the ID
+            ServiceLocator.tokenManager.measureRecordId = newMeasureId
 
             // Step 5: Check Total History Count (API #4) & Fetch History (API #5)
             uiState = uiState.copy(statusMessage = "STATUS_SYNCING")

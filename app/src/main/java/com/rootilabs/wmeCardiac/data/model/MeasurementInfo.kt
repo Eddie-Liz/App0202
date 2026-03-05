@@ -20,8 +20,8 @@ data class MeasurementInfo(
         // Add 2-minute buffer for clock drift
         val bufferMillis = 120_000L
         
-        // Allow both STATE_MEASURING (0) and state 10 as active measuring states
-        val isValidState = s == STATE_MEASURING || s == 10
+        // Allow only STATE_MEASURING (0) as active measuring state
+        val isValidState = s == STATE_MEASURING
         val isTimeValid = et != 0L && now < (endTimeMillis + bufferMillis)
         
         val isOk = isValidState && isTimeValid
