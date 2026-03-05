@@ -65,17 +65,8 @@ class LoginViewModel : ViewModel() {
 
             // Step 2: Auth Patient
             uiState = uiState.copy(statusMessage = "STATUS_AUTH")
-            var authResult = repository.authPatient(institutionId, patientId)
+            val authResult = repository.authPatient(institutionId, patientId)
             Log.d(TAG, "Step 2 authPatient: success=${authResult.isSuccess}")
-
-            // 409 = previous session still active → unsubscribe it and retry once
-            if (authResult.isFailure && authResult.exceptionOrNull()?.message == "ALREADY_SUBSCRIBED") {
-                Log.w(TAG, "409 ALREADY_SUBSCRIBED → unsubscribing old session and retrying...")
-                repository.unsubscribePatient(institutionId, patientId)
-                authResult = repository.authPatient(institutionId, patientId)
-                Log.d(TAG, "Step 2 retry authPatient: success=${authResult.isSuccess}")
-            }
-
             if (authResult.isFailure) {
                 val cause = authResult.exceptionOrNull()?.message ?: ""
                 Log.e(TAG, "authPatient failed: $cause")
