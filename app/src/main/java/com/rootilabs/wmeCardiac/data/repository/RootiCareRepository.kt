@@ -288,7 +288,7 @@ class RootiCareRepository(
             val request = AddVirtualTagsRequest(
                 deviceUUID = tokenManager.deviceId,
                 appVersion = tokenManager.appVersion,
-                appType = 1, // Android
+                appType = 2, // Android
                 tags = tags.map { it.toVirtualTagRequest() }
             )
 

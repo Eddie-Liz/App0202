@@ -90,17 +90,22 @@ class LoginViewModel : ViewModel() {
                 
                 Log.w(TAG, "409 check: localDeviceId=$localDeviceId, serverDeviceId=$serverDeviceId")
 
-                // If server has a deviceId and it's DIFFERENT from ours, it's truly another phone
-                val isAnotherPhysicalPhone = serverDeviceId != null && serverDeviceId != localDeviceId
+                // We only block if the server records a 'PHONE_...' ID that is NOT ours.
+                // If it's a hardware MAC (no 'PHONE_') or null, we allow the current phone to "claim" the session.
+                val isConflictWithAnotherPhone = serverDeviceId != null && 
+                                                serverDeviceId.startsWith("PHONE_") && 
+                                                serverDeviceId != localDeviceId
 
-                if (isAnotherPhysicalPhone) {
+                if (isConflictWithAnotherPhone) {
                     Log.w(TAG, "Genuinely another phone is active ($serverDeviceId) -> blocking login")
                     uiState = uiState.copy(isLoading = false, error = "ALREADY_SUBSCRIBED")
                     return
                 } else {
-                    // ID matches (same phone) or serverDeviceId is null (legacy) 
-                    // -> Allow it to repair the session.
-                    Log.w(TAG, "Same phone or ID missing -> revoking and retrying login")
+                    // It's either:
+                    // 1. Same phone (PHONE_... matches)
+                    // 2. Hardware ID only (MAC address, not a phone ID)
+                    // 3. No ID at all
+                    Log.w(TAG, "No conflict with other phones (same phone or hardware-only session) -> repairing session")
                     repository.revokeOldSession(institutionId, patientId)
                     authResult = repository.authPatient(institutionId, patientId)
                     Log.d(TAG, "Step 2 retry authPatient: success=${authResult.isSuccess}")

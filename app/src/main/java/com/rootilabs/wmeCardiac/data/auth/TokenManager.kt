@@ -11,7 +11,7 @@ class TokenManager(private val context: Context) {
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_SERVER_DEVICE_ID = "server_device_id"
         private const val KEY_VENDOR_NAME = "vendor_name"
-        private const val KEY_DEVICE_ID = "device_id"
+        private const val KEY_PHONE_ID = "phone_identifier"
         private const val KEY_INSTITUTION_ID = "institution_id"
         private const val KEY_PATIENT_ID = "patient_id"
         private const val KEY_MEASURE_RECORD_ID = "measure_record_id"
@@ -26,14 +26,17 @@ class TokenManager(private val context: Context) {
 
     val deviceId: String
         get() {
-            var id = prefs.getString(KEY_DEVICE_ID, null)
+            var id = prefs.getString(KEY_PHONE_ID, null)
             if (id == null) {
-                // Use ANDROID_ID for stability across reinstalls
-                id = android.provider.Settings.Secure.getString(
+                // Generate a clean phone-specific ID (not a MAC address)
+                val androidId = android.provider.Settings.Secure.getString(
                     context.contentResolver,
                     android.provider.Settings.Secure.ANDROID_ID
                 ) ?: java.util.UUID.randomUUID().toString()
-                prefs.edit().putString(KEY_DEVICE_ID, id).apply()
+                
+                // Prefix it so it's clearly different from server hardware IDs (MACs)
+                id = "PHONE_$androidId"
+                prefs.edit().putString(KEY_PHONE_ID, id).apply()
             }
             return id
         }
