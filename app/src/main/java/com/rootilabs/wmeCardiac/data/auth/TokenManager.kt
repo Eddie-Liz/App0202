@@ -28,7 +28,11 @@ class TokenManager(private val context: Context) {
         get() {
             var id = prefs.getString(KEY_DEVICE_ID, null)
             if (id == null) {
-                id = java.util.UUID.randomUUID().toString()
+                // Use ANDROID_ID for stability across reinstalls on the same physical device
+                id = android.provider.Settings.Secure.getString(
+                    context.contentResolver,
+                    android.provider.Settings.Secure.ANDROID_ID
+                ) ?: java.util.UUID.randomUUID().toString()
                 prefs.edit().putString(KEY_DEVICE_ID, id).apply()
             }
             return id

@@ -81,24 +81,26 @@ class LoginViewModel : ViewModel() {
             Log.d(TAG, "Step 2 authPatient: success=${authResult.isSuccess}")
 
             // 409 = some device/session is already subscribed
-            // Check measureRecordId to decide what to do:
+            // Check deviceId to distinguish between "same phone (reinstall)" and "another phone"
             if (authResult.isFailure && authResult.exceptionOrNull()?.message == "ALREADY_SUBSCRIBED") {
-                val localMeasureId = ServiceLocator.tokenManager.measureRecordId
+                val localDeviceId = ServiceLocator.tokenManager.deviceId
                 val measureCheck = repository.getCurrentMeasurement(institutionId, patientId)
-                val serverMeasureId = measureCheck.getOrNull()?.measureRecordId
-                Log.w(TAG, "409 check: localMeasureId=$localMeasureId, serverMeasureId=$serverMeasureId")
+                val measureInfo = measureCheck.getOrNull()
+                val serverDeviceId = measureInfo?.deviceId
+                
+                Log.w(TAG, "409 check: localDeviceId=$localDeviceId, serverDeviceId=$serverDeviceId")
 
-                val isAnotherDevice = localMeasureId != null && localMeasureId != serverMeasureId
+                // If server has a deviceId and it's DIFFERENT from ours, it's truly another phone
+                val isAnotherPhysicalPhone = serverDeviceId != null && serverDeviceId != localDeviceId
 
-                if (isAnotherDevice) {
-                    // GENUINELY another device is active with a different ID
-                    Log.w(TAG, "Another device is active ($serverMeasureId) -> blocking login per 409 policy")
+                if (isAnotherPhysicalPhone) {
+                    Log.w(TAG, "Genuinely another phone is active ($serverDeviceId) -> blocking login")
                     uiState = uiState.copy(isLoading = false, error = "ALREADY_SUBSCRIBED")
                     return
                 } else {
-                    // localId is null (new install) OR localId matches server (stale session)
-                    // -> Allow it to take over/repair the session.
-                    Log.w(TAG, "New install or stale session -> revoking and retrying login")
+                    // ID matches (same phone) or serverDeviceId is null (legacy) 
+                    // -> Allow it to repair the session.
+                    Log.w(TAG, "Same phone or ID missing -> revoking and retrying login")
                     repository.revokeOldSession(institutionId, patientId)
                     authResult = repository.authPatient(institutionId, patientId)
                     Log.d(TAG, "Step 2 retry authPatient: success=${authResult.isSuccess}")
