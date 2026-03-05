@@ -87,6 +87,8 @@ class LoginViewModel : ViewModel() {
                     // null local (new device) OR same measureRecordId (stale session) → clear and retry
                     Log.w(TAG, "New device or stale session → unsubscribing and retrying login")
                     repository.unsubscribePatient(institutionId, patientId)
+                    // unsubscribePatient clears local data (including token), so refresh token before retrying
+                    repository.getToken()
                     authResult = repository.authPatient(institutionId, patientId)
                     Log.d(TAG, "Step 2 retry authPatient: success=${authResult.isSuccess}")
                 }
