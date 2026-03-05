@@ -113,8 +113,10 @@ class MainViewModel : ViewModel() {
                     hasUnsyncedTags = unsyncedCount > 0,
                     showSyncErrorBadge = uiState.showSyncErrorBadge && unsyncedCount > 0,
                     lastTagTime = lastTime,
-                    loginTimeDisplay = loginTimeStr
-                    // Note: isMeasuring is controlled ONLY by checkRecordingStatus()
+                    loginTimeDisplay = loginTimeStr,
+                    // Restore previous isMeasuring state immediately from cache.
+                    // checkRecordingStatus() will correct this if the server says otherwise.
+                    isMeasuring = isMeasuring
                 )
 
                 if (unsyncedCount > 0) {
