@@ -68,25 +68,27 @@ class LoginViewModel : ViewModel() {
             var authResult = repository.authPatient(institutionId, patientId)
             Log.d(TAG, "Step 2 authPatient: success=${authResult.isSuccess}")
 
-            // 409 = some device is already subscribed
-            // Check measureRecordId to determine if it's OUR stale session or another device
+            // 409 = some device/session is already subscribed
+            // Check measureRecordId to decide what to do:
             if (authResult.isFailure && authResult.exceptionOrNull()?.message == "ALREADY_SUBSCRIBED") {
                 val localMeasureId = ServiceLocator.tokenManager.measureRecordId
                 val measureCheck = repository.getCurrentMeasurement(institutionId, patientId)
                 val serverMeasureId = measureCheck.getOrNull()?.measureRecordId
                 Log.w(TAG, "409 check: localMeasureId=$localMeasureId, serverMeasureId=$serverMeasureId")
 
-                if (localMeasureId != null && localMeasureId == serverMeasureId) {
-                    // Same measureRecordId → this device's stale session → unsubscribe and retry
-                    Log.w(TAG, "Same measureRecordId → stale session from this device, auto-unsubscribing and retrying")
+                val isAnotherDevice = localMeasureId != null && localMeasureId != serverMeasureId
+
+                if (isAnotherDevice) {
+                    // Local has a DIFFERENT measureRecordId → genuinely another device is active
+                    Log.w(TAG, "Another device is logged in (local=$localMeasureId, server=$serverMeasureId), blocking login")
+                    uiState = uiState.copy(isLoading = false, error = "ALREADY_SUBSCRIBED")
+                    return
+                } else {
+                    // null local (new device) OR same measureRecordId (stale session) → clear and retry
+                    Log.w(TAG, "New device or stale session → unsubscribing and retrying login")
                     repository.unsubscribePatient(institutionId, patientId)
                     authResult = repository.authPatient(institutionId, patientId)
                     Log.d(TAG, "Step 2 retry authPatient: success=${authResult.isSuccess}")
-                } else {
-                    // Different measureRecordId (or no local) → genuinely another device
-                    Log.w(TAG, "Different measureRecordId → another device is logged in, blocking login")
-                    uiState = uiState.copy(isLoading = false, error = "ALREADY_SUBSCRIBED")
-                    return
                 }
             }
 
