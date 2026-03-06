@@ -52,9 +52,9 @@ class LoginViewModel : ViewModel() {
 
     private suspend fun performLogin() {
         try {
-            // Normalize inputs to lowercase to avoid case-sensitivity issues with the server
-            institutionId = institutionId.trim().lowercase()
-            patientId = patientId.trim().lowercase()
+            // Maintain original case of inputs since server might be case-sensitive
+            institutionId = institutionId.trim()
+            patientId = patientId.trim()
 
             uiState = uiState.copy(isLoading = true, error = null, statusMessage = "STATUS_TOKEN")
             Log.d(TAG, "=== Login Start === institutionId=$institutionId, patientId=$patientId")
@@ -220,12 +220,12 @@ class LoginViewModel : ViewModel() {
         val parts = barcode.split(delimiter).map { it.trim() }.filter { it.isNotEmpty() }
         if (parts.size >= 2) {
             // Format: institutionId + delimiter + patientId
-            institutionId = parts[0].lowercase()
-            patientId = parts[1].lowercase()
+            institutionId = parts[0]
+            patientId = parts[1]
         } else {
             // Single value → fill ID Number (patientId) only
             // institutionId is expected to be filled manually or pre-set
-            patientId = barcode.trim().lowercase()
+            patientId = barcode.trim()
         }
         uiState = uiState.copy(showScanner = false)
     }

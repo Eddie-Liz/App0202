@@ -360,6 +360,19 @@ class RootiCareRepository(
     // ---- Helpers ----
     private fun parseError(errorJson: String?): String {
         if (errorJson == null) return "未知錯誤"
+        
+        // Check for specific known error keywords in the raw string first, 
+        // bypassing Moshi parsing in case the server format differs.
+        if (errorJson.contains("invalid_patient", ignoreCase = true)) {
+            return "無效的病患 ID"
+        }
+        if (errorJson.contains("invalid_institution_id", ignoreCase = true)) {
+            return "無效的機構 ID"
+        }
+        if (errorJson.contains("patient_already_subscribed", ignoreCase = true)) {
+            return "此病患已在其他裝置登入"
+        }
+
         return try {
             val adapter = moshi.adapter(ApiError::class.java)
             val error = adapter.fromJson(errorJson)

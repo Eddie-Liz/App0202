@@ -79,12 +79,12 @@ class TokenManager(private val context: Context) {
         set(value) = prefs.edit().putString(KEY_ACCESS_TOKEN, value).apply()
 
     var institutionId: String?
-        get() = prefs.getString(KEY_INSTITUTION_ID, null)?.lowercase()
-        set(value) = prefs.edit().putString(KEY_INSTITUTION_ID, value?.lowercase()).apply()
+        get() = prefs.getString(KEY_INSTITUTION_ID, null)
+        set(value) = prefs.edit().putString(KEY_INSTITUTION_ID, value).apply()
 
     var patientId: String?
-        get() = prefs.getString(KEY_PATIENT_ID, null)?.lowercase()
-        set(value) = prefs.edit().putString(KEY_PATIENT_ID, value?.lowercase()).apply()
+        get() = prefs.getString(KEY_PATIENT_ID, null)
+        set(value) = prefs.edit().putString(KEY_PATIENT_ID, value).apply()
 
     var measureRecordId: String?
         get() = prefs.getString(KEY_MEASURE_RECORD_ID, null)

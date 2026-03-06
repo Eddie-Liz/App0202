@@ -18,8 +18,8 @@ android {
         applicationId = "com.rootilabs.wmeCardiac"
         minSdk = 24
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.4"
+        versionCode = 6
+        versionName = "1.0.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -33,7 +33,9 @@ android {
             firebaseAppDistribution {
                 artifactType = "APK"
                 releaseNotes = """
-                    [v1.0.4 Bug Fix / 修正說明]
+                    [v1.0.5 Bug Fix / 修正說明]
+                    - EN: Allow upper-case patient/institution IDs by removing automatic lowercase normalization during login and local persistence.
+                    - CH: 修正登入時會將機構代碼與病患ID自動強制轉為小寫，導致伺服器查無病患（400 invalid_patient）的問題。
                     - EN: Fixed permanent login lockout (409 Error) after an offline logout by unconditionally revoking old active sessions.
                     - CH: 修正因無網路登出後，伺服器卡在登入狀態導致被永久鎖死（409錯誤）的問題。
                     - EN: Fixed app switching to wrong server after restart by persisting the selected Server URL.
