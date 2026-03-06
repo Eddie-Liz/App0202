@@ -210,15 +210,17 @@ class MainViewModel : ViewModel() {
                             // regardless of whether the session is currently active or ended.
                             // This ensures local history doesn't show "orphan" tags from a different session.
                             if (serverMeasureId != null && serverMeasureId != localMeasureId) {
-                                Log.i(TAG, "Session ID changed ($localMeasureId -> $serverMeasureId), clearing local tags to sync with server")
+                                Log.d(TAG, "Session ID changed ($localMeasureId -> $serverMeasureId), clearing local tags")
                                 repository.clearLocalEventTags()
                                 tokenManager.measureRecordId = serverMeasureId
+                                uiState = uiState.copy(eventTags = emptyList())
                                 loadEventTags()
                             } else if (serverMeasureId == null && localMeasureId != null) {
                                 // Server has no session, but local has one -> also an orphan
                                 Log.w(TAG, "No active session on server, clearing orphan local tags")
                                 repository.clearLocalEventTags()
                                 tokenManager.measureRecordId = null
+                                uiState = uiState.copy(eventTags = emptyList())
                                 loadEventTags()
                             }
 

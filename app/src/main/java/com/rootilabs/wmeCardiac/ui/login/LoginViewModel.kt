@@ -58,6 +58,9 @@ class LoginViewModel : ViewModel() {
             uiState = uiState.copy(isLoading = true, error = null, statusMessage = "STATUS_TOKEN")
             Log.d(TAG, "=== Login Start === institutionId=$institutionId, patientId=$patientId")
 
+            // Capture oldMeasureId at the VERY START, before any 409 repair logic runs
+            val oldMeasureId = ServiceLocator.tokenManager.measureRecordId
+
             // CRITICAL: Cancel any pending background logout workers that might have been
             // enqueued by a previous failed attempt. This prevents "fake logout" after success.
             try {
@@ -122,10 +125,6 @@ class LoginViewModel : ViewModel() {
             }
 
             // Step 3: Get Current Measurement
-            // IMPORTANT: capture oldMeasureId BEFORE the API call, because
-            // getCurrentMeasurement() will overwrite tokenManager.measureRecordId with the server value.
-            val oldMeasureId = ServiceLocator.tokenManager.measureRecordId
-
             uiState = uiState.copy(statusMessage = "STATUS_MEASUREMENT")
             val measureResult = repository.getCurrentMeasurement(institutionId, patientId)
             Log.d(TAG, "Step 3 getCurrentMeasurement: success=${measureResult.isSuccess}")
