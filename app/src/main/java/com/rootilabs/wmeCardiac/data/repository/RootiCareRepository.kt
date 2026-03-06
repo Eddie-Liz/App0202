@@ -219,6 +219,7 @@ class RootiCareRepository(
                 rootiCareApi.unsubscribePatient(institutionId, patientId)
             } catch (e: Exception) {
                 Log.e(TAG, "Logout network error: ${e.message}. Forcing local logout.")
+                tokenManager.offlineLogoutPending = true
                 clearLocalData()
                 return Result.success(Unit)
             }
@@ -229,11 +230,13 @@ class RootiCareRepository(
 
             if (response.isSuccessful) {
                 Log.d(TAG, "Logout success, clearing local data")
+                tokenManager.offlineLogoutPending = false
                 clearLocalData()
                 Result.success(Unit)
             } else {
                 val errorMsg = response.errorBody()?.string() ?: "伺服器錯誤 ($statusCode)"
                 Log.w(TAG, "Logout server error: $statusCode - $errorMsg. Forcing local logout.")
+                tokenManager.offlineLogoutPending = true
                 clearLocalData()
                 Result.success(Unit)
             }

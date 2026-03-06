@@ -22,6 +22,7 @@ class TokenManager(private val context: Context) {
         private const val KEY_IS_MEASURING = "is_measuring"
         private const val KEY_LAST_LOGGED_OUT_ID = "last_logged_out_id"
         private const val KEY_SERVER_URL = "server_url"
+        private const val KEY_OFFLINE_LOGOUT_PENDING = "offline_logout_pending"
     }
 
     var serverUrl: String?
@@ -35,6 +36,10 @@ class TokenManager(private val context: Context) {
     var serverDeviceId: String?
         get() = prefs.getString(KEY_SERVER_DEVICE_ID, null)
         set(value) = prefs.edit().putString(KEY_SERVER_DEVICE_ID, value).apply()
+
+    var offlineLogoutPending: Boolean
+        get() = prefs.getBoolean(KEY_OFFLINE_LOGOUT_PENDING, false)
+        set(value) = prefs.edit().putBoolean(KEY_OFFLINE_LOGOUT_PENDING, value).apply()
 
     val deviceId: String
         get() {
@@ -116,6 +121,7 @@ class TokenManager(private val context: Context) {
         val pushToken = prefs.getString("push_token", null)
         val lastLoggedOutId = prefs.getString(KEY_LAST_LOGGED_OUT_ID, null)
         val savedServerUrl = prefs.getString(KEY_SERVER_URL, null)
+        val offlinePending = prefs.getBoolean(KEY_OFFLINE_LOGOUT_PENDING, false)
         
         // Single atomic-like transaction to clear and restore
         val editor = prefs.edit().clear()
@@ -123,6 +129,7 @@ class TokenManager(private val context: Context) {
         if (pushToken != null) editor.putString("push_token", pushToken)
         if (lastLoggedOutId != null) editor.putString(KEY_LAST_LOGGED_OUT_ID, lastLoggedOutId)
         if (savedServerUrl != null) editor.putString(KEY_SERVER_URL, savedServerUrl)
+        if (offlinePending) editor.putBoolean(KEY_OFFLINE_LOGOUT_PENDING, true)
         editor.commit() // Use commit() here for immediate persistence
     }
 }
