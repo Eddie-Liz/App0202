@@ -215,40 +215,29 @@ class RootiCareRepository(
         return try {
             Log.d(TAG, "Logout: POST .../unsubscribe inst=$institutionId, patient=$patientId")
 
-            try {
-                val response = rootiCareApi.unsubscribePatient(institutionId, patientId)
-                val responseBody = response.body()?.string()
-                Log.d(TAG, "Logout response: code=${response.code()}, body=$responseBody")
-
-                if (response.isSuccessful) {
-                    Log.d(TAG, "Logout success")
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.w(TAG, "Logout server error: ${response.code()} - $errorBody")
-                }
+            val response = try {
+                rootiCareApi.unsubscribePatient(institutionId, patientId)
             } catch (e: Exception) {
-                Log.w(TAG, "Logout: Network error (${e.javaClass.simpleName}: ${e.message}). Scheduling background cleanup.")
-                try {
-                    val workRequest = OneTimeWorkRequestBuilder<com.rootilabs.wmeCardiac.data.worker.LogoutWorker>()
-                        .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-                        .addTag("LogoutWorker")
-                        .setInputData(workDataOf("institutionId" to institutionId, "patientId" to patientId))
-                        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, java.util.concurrent.TimeUnit.SECONDS)
-                        .build()
-                    WorkManager.getInstance(ServiceLocator.appContext).enqueue(workRequest)
-                } catch (we: Exception) {
-                    Log.e(TAG, "Failed to schedule background logout", we)
-                }
+                Log.e(TAG, "Logout network error: ${e.message}")
+                return Result.failure(Exception("網路連線失敗，請檢查網路後再試"))
             }
 
-            // Always clear local data on user's logout intent
-            clearLocalData()
-            Result.success(Unit)
+            val statusCode = response.code()
+            val responseBody = response.body()?.string()
+            Log.d(TAG, "Logout response: code=$statusCode, body=$responseBody")
 
+            if (response.isSuccessful) {
+                Log.d(TAG, "Logout success, clearing local data")
+                clearLocalData()
+                Result.success(Unit)
+            } else {
+                val errorMsg = response.errorBody()?.string() ?: "伺服器錯誤 ($statusCode)"
+                Log.w(TAG, "Logout server error: $statusCode - $errorMsg")
+                Result.failure(Exception(errorMsg))
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Logout outer exception, clearing local anyway", e)
-            clearLocalData()
-            Result.success(Unit)
+            Log.e(TAG, "Logout critical error", e)
+            Result.failure(e)
         }
     }
 
