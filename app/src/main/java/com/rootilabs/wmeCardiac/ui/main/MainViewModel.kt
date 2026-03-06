@@ -206,21 +206,18 @@ class MainViewModel : ViewModel() {
 
                             Log.d(TAG, "checkRecordingStatus: serverStatus=$serverStatus, serverMeasureId=$serverMeasureId, localMeasureId=$localMeasureId")
 
-                            // Always sync ID and clear data if the Session ID has changed,
+                            // Always sync ID if the Session ID has changed,
                             // regardless of whether the session is currently active or ended.
-                            // This ensures local history doesn't show "orphan" tags from a different session.
+                            // We DO NOT clear local event tags here to prevent UI flashes or data loss 
+                            // if the session reconnects right after a backend refresh (e.g. rootirx re-recording).
                             if (serverMeasureId != null && serverMeasureId != localMeasureId) {
-                                Log.d(TAG, "Session ID changed ($localMeasureId -> $serverMeasureId), clearing local tags")
-                                repository.clearLocalEventTags()
+                                Log.d(TAG, "Session ID changed ($localMeasureId -> $serverMeasureId), syncing ID without clearing tags")
                                 tokenManager.measureRecordId = serverMeasureId
-                                uiState = uiState.copy(eventTags = emptyList())
                                 loadEventTags()
                             } else if (serverMeasureId == null && localMeasureId != null) {
                                 // Server has no session, but local has one -> also an orphan
-                                Log.w(TAG, "No active session on server, clearing orphan local tags")
-                                repository.clearLocalEventTags()
+                                Log.w(TAG, "No active session on server, syncing ID without clearing tags")
                                 tokenManager.measureRecordId = null
-                                uiState = uiState.copy(eventTags = emptyList())
                                 loadEventTags()
                             }
 
