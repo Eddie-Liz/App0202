@@ -279,10 +279,10 @@ class RootiCareRepository(
 
         return try {
             val request = AddVirtualTagsRequest(
-                // Use the persistent, unique phone ID as the consistent device identifier. 
-                // This ensures all tags from this device are attributed to the same 'Source Device' 
-                // regardless of recorder hardware swaps or background session refreshes.
-                deviceUUID = tokenManager.deviceId,
+                // Use the RootiRx hardware ID (captured during initial login) as the primary 
+                // device identifier. This ensures consistency on the server dashboard 
+                // even if the session is refreshed in the background.
+                deviceUUID = tokenManager.serverDeviceId ?: tokenManager.deviceId,
                 appVersion = tokenManager.appVersion,
                 appType = 2, // Android
                 tags = tags.map { it.toVirtualTagRequest() }
