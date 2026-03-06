@@ -101,13 +101,12 @@ class LoginViewModel : ViewModel() {
                 
                 Log.w(TAG, "409 check: localMeasureId=$localMeasureId, lastLoggedOutId=$lastLoggedOutId, serverMeasureId=$serverMeasureId")
 
-                // Strict check: Only same session ID (current or recently logged out) OR
-                // an explicitly pending offline logout allows auto-repair. 
-                // This blocks other phones from stealing an active session, while letting this phone
-                // recover if a previous same-phone logout failed to sync to server.
-                val isStaleSessionOnSameDevice = (localMeasureId != null && localMeasureId == serverMeasureId) ||
-                                                (lastLoggedOutId != null && lastLoggedOutId == serverMeasureId) ||
-                                                tokenManager.offlineLogoutPending
+                // Strict check: Only recover if this device specifically failed to logout 
+                // of the EXACT SAME session that is currently active.
+                // This prevents `offlineLogoutPending` from a previous session from blindly 
+                // stealing a brand new session created by another phone.
+                val isStaleSessionOnSameDevice = tokenManager.offlineLogoutPending && 
+                                                 (lastLoggedOutId != null && lastLoggedOutId == serverMeasureId)
 
                 if (isStaleSessionOnSameDevice) {
                     Log.w(TAG, "Stale or recently logged-out session on same device -> repairing")
@@ -174,6 +173,7 @@ class LoginViewModel : ViewModel() {
 
             if (!isMeasuring) {
                 Log.w(TAG, "Login blocked: Server says NOT_MEASURING (state=${measurementInfo.state}). Cleaning up.")
+                ServiceLocator.tokenManager.lastLoggedOutMeasureId = measurementInfo.measureRecordId
                 repository.unsubscribePatient()
                 uiState = uiState.copy(isLoading = false, error = "NOT_MEASURING")
                 return
@@ -181,6 +181,7 @@ class LoginViewModel : ViewModel() {
 
             if (!measurementInfo.isVirtualTagMode()) {
                 Log.w(TAG, "Login blocked: Server says mode is NOT VirtualTag (mode=${measurementInfo.mode}). Cleaning up.")
+                ServiceLocator.tokenManager.lastLoggedOutMeasureId = measurementInfo.measureRecordId
                 repository.unsubscribePatient()
                 uiState = uiState.copy(isLoading = false, error = "UNSUPPORTED_MODE")
                 return
