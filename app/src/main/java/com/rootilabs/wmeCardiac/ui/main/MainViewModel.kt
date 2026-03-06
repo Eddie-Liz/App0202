@@ -95,7 +95,7 @@ class MainViewModel : ViewModel() {
         androidx.work.WorkManager.getInstance(ServiceLocator.appContext)
             .cancelAllWorkByTag("LogoutWorker")
 
-        Log.d(TAG, "MainViewModel Init: isLoggedIn=${tokenManager.isLoggedIn}, isMeasuring=${uiState.isMeasuring}, measureRecordId=${tokenManager.measureRecordId}")
+        Log.d(TAG, "MainViewModel Init: isLoggedIn=${tokenManager.isLoggedIn}, isMeasuring=${uiState.isMeasuring}, measureRecordId=${tokenManager.measureRecordId}, deviceId=${tokenManager.deviceId}")
         loadEventTags()
         checkRecordingStatus()
     }

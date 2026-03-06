@@ -2,12 +2,14 @@ package com.rootilabs.wmeCardiac.data.auth
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 
 class TokenManager(private val context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("rooticare_prefs", Context.MODE_PRIVATE)
 
     companion object {
+        private const val TAG = "TokenManager"
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_SERVER_DEVICE_ID = "server_device_id"
         private const val KEY_VENDOR_NAME = "vendor_name"
@@ -41,7 +43,11 @@ class TokenManager(private val context: Context) {
                 
                 // Prefix it so it's clearly different from server hardware IDs (MACs)
                 id = "PHONE_$androidId"
-                prefs.edit().putString(KEY_PHONE_ID, id).apply()
+                Log.i(TAG, "Generating NEW persistent deviceId: $id")
+                // Use commit() to ensure it hits disk immediately
+                prefs.edit().putString(KEY_PHONE_ID, id).commit()
+            } else {
+                Log.v(TAG, "Retrieved existing deviceId: $id")
             }
             return id
         }
@@ -50,12 +56,14 @@ class TokenManager(private val context: Context) {
         get() {
             var token = prefs.getString("push_token", null)
             if (token == null) {
-                token = java.util.UUID.randomUUID().toString() // Generate fake push token for now
-                prefs.edit().putString("push_token", token).apply()
+                token = java.util.UUID.randomUUID().toString()
+                Log.i(TAG, "Generating NEW persistent pushToken: $token")
+                // Use commit() for safety
+                prefs.edit().putString("push_token", token).commit()
             }
             return token
         }
-        set(value) = prefs.edit().putString("push_token", value).apply()
+        set(value) = prefs.edit().putString("push_token", value).commit()
 
     var vendorName: String?
         get() = prefs.getString(KEY_VENDOR_NAME, null)
@@ -98,20 +106,16 @@ class TokenManager(private val context: Context) {
         }
 
     fun clearAll() {
+        Log.w(TAG, "clearAll() called: clearing most preferences but preserving identity IDs")
         val phoneId = prefs.getString(KEY_PHONE_ID, null)
         val pushToken = prefs.getString("push_token", null)
         val lastLoggedOutId = prefs.getString(KEY_LAST_LOGGED_OUT_ID, null)
         
-        prefs.edit().clear().apply()
-        
-        if (phoneId != null) {
-            prefs.edit().putString(KEY_PHONE_ID, phoneId).apply()
-        }
-        if (pushToken != null) {
-            prefs.edit().putString("push_token", pushToken).apply()
-        }
-        if (lastLoggedOutId != null) {
-            prefs.edit().putString(KEY_LAST_LOGGED_OUT_ID, lastLoggedOutId).apply()
-        }
+        // Single atomic-like transaction to clear and restore
+        val editor = prefs.edit().clear()
+        if (phoneId != null) editor.putString(KEY_PHONE_ID, phoneId)
+        if (pushToken != null) editor.putString("push_token", pushToken)
+        if (lastLoggedOutId != null) editor.putString(KEY_LAST_LOGGED_OUT_ID, lastLoggedOutId)
+        editor.commit() // Use commit() here for immediate persistence
     }
 }
