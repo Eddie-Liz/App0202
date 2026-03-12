@@ -122,4 +122,10 @@
     <string name="you_still_have_data_that_hasn_t_been_uploaded_are_you_sure_you_want_to_log_out">You still have data that hasn\'t been uploaded. Are you sure you want to log out?</string>
     <string name="your_device_is_not_currently_recording">Your device is not currently recording, the event cannot be marked!</string>
     <string name="your_device_is_not_currently_recording_the_event_cannot_be_marked">Your device is not currently recording, the event cannot be marked!</string>
+    <string name="invalid_measurement_record">Invalid measurement record.</string>
+    <string name="no_active_subscription_found">No active subscription found.</string>
+    <string name="device_s_id">Device ID</string>
+    <string name="has_been_logged_in">Has been logged in</string>
+    <string name="no_device_has_started_recording">No device has started recording.</string>
+    <string name="duplicate_patient_id_detected_please_verify_before_setting">Duplicate Patient ID detected. Please verify before setting.</string>
 </resources>

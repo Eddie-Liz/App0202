@@ -77,4 +77,10 @@
     <string name="no_intensity_recorded">No hay intensidad registrada</string>
     <string name="back_desc">Atrás</string>
     <string name="medical_clinic">Clínica médica:</string>
+    <string name="invalid_measurement_record">Registro de medición no válido.</string>
+    <string name="no_active_subscription_found">No se encontró ninguna suscripción activa.</string>
+    <string name="device_s_id">ID del dispositivo</string>
+    <string name="has_been_logged_in">Conectado</string>
+    <string name="no_device_has_started_recording">Ningún dispositivo ha comenzado a grabar.</string>
+    <string name="duplicate_patient_id_detected_please_verify_before_setting">Se detectó un ID de paciente duplicado. Verifique antes de configurar.</string>
 </resources>

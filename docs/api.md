@@ -84,6 +84,85 @@ val apiService = retrofit.create(RootiApiService::class.java)
 
 ---
 
+## Login Flow Overview
+
+登入流程已改為**兩階段**：先取得可用裝置清單，使用者選擇裝置後再進行身份驗證。
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        登入流程                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. 使用者輸入 Account ID + Patient ID，按下「登入」              │
+│                         │                                       │
+│                         ▼                                       │
+│  2. 呼叫 Get Recording Measurements (API #2)                    │
+│     GET .../patients/{patientId}/recordingMeasurements           │
+│                         │                                       │
+│              ┌──────────┼──────────┐                             │
+│              │          │          │                             │
+│         count = 0   count = 1   count >= 2                      │
+│              │          │          │                             │
+│              ▼          │          ▼                             │
+│         顯示錯誤        │     顯示警告：                         │
+│         「沒有任何       │     「Duplicate Patient ID             │
+│          裝置開始        │      detected」                        │
+│          錄製」         │          │                             │
+│              │          │          ▼                             │
+│              ▼          ▼     使用者從下拉選單                    │
+│         回到登入頁  自動彈出    選擇裝置                          │
+│                    下拉選單         │                             │
+│                         │          │                             │
+│                         ▼          ▼                             │
+│  3. 使用者確認裝置（按「完成」）                                  │
+│     → 儲存選擇的 measureRecordId                                 │
+│                         │                                       │
+│                         ▼                                       │
+│  4. 呼叫 Auth Patient (API #3)                                  │
+│     GET .../patients/{patientId}/measures/{measureId}            │
+│                         │                                       │
+│                         ▼                                       │
+│  5. 呼叫 Get Current Measurement Info (API #4)                  │
+│     GET .../patients/{patientId}/measures/{measureId}            │
+│                         │                                       │
+│              ┌──────────┴──────────┐                             │
+│              │                     │                             │
+│         正在錄製中            不在錄製中                          │
+│              │                     │                             │
+│              ▼                     ▼                             │
+│     進入主頁 + 下載歷史      顯示錯誤 + 登出                     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**裝置下拉選單顯示規則：**
+
+| `isPatientSubscribed` | 下拉選單顯示文字 | 說明 |
+|---|---|---|
+| `false` | `{deviceId}` | 尚未被登入的裝置 |
+| `true` | `{deviceId} (已登入)` | 已有其他 client 訂閱中 |
+
+> **多國語言**：「已登入」的多國語言 key 為 `"Has been logged in"`。使用者仍可選擇已被登入的裝置（server 會決定是否允許），但 UI 需明確標示讓使用者知情。
+
+**登入流程共用錯誤處理：**
+
+以下錯誤可能出現在登入流程中的多個 API（Auth Patient、Get Current Measurement Info、Get Recording Measurements）。Client 端應統一處理：
+
+| API `error` 值 | Android String Resource | 顯示訊息 |
+|---|---|---|
+| `patient_already_subscribed` | `R.string.this_patient_is_already_logged_in` | This patient is already logged in. |
+| `invalid_patient` | `R.string.invalid_patient` | Invalid Patient |
+| `invalid_institution_id` | `R.string.invalid_institution_id_patient` | Invalid Institution ID Patient |
+| `invalid_institution` | `R.string.invalid_institution_id_patient` | Invalid Institution ID Patient |
+| `invalid_measure_record_id` | `R.string.invalid_measurement_record` | Invalid measurement record. |
+| `invalid_measurement` | `R.string.invalid_measurement_record` | Invalid measurement record. |
+| `subscription_not_found` | `R.string.no_active_subscription_found` | No active subscription found. |
+| `invalid_measure_record` | `R.string.this_measurement_record_was_abandoned` | This measurement record was abandoned. |
+
+> 若 `error` 值不在上表中，顯示預設的 `R.string.sign_in_failed`（Sign In Failed）。
+
+---
+
 ## API Endpoints
 
 ### 1. Get Token
@@ -151,14 +230,14 @@ val token = response.body()?.get("access_token")?.asString
 
 ---
 
-### 2. Auth Patient (Subscribe Patient MCT Events)
+### 2. Get Recording Measurements
 
-驗證並訂閱病患，取得病患資訊。用於登入流程。
+取得病患目前所有「錄製中」的量測紀錄。登入流程中，使用者按下登入按鈕後首先呼叫此 API，取得可用裝置清單供使用者選擇。
 
 | Item | Value |
 |------|-------|
 | **Method** | `GET` |
-| **Path** | `/oauth/vendors/{institutionId}/patients/{patientId}` |
+| **Path** | `/api/v1/institutions/{institutionId}/patients/{patientId}/recordingMeasurements` |
 | **Authentication** | Bearer Token |
 | **Request Body** | None |
 
@@ -175,6 +254,167 @@ Authorization: Bearer {token}
 |-----------|------|----------|-------------|
 | `institutionId` | String | Yes | Institution/vendor identifier |
 | `patientId` | String | Yes | Patient identifier (ID number) |
+
+**Response (200 OK):**
+
+回傳 JSON 陣列，每個元素代表一筆錄製中的量測紀錄：
+
+```json
+[
+  {
+    "measureRecordOid": 12345,
+    "measureRecordId": "MR-20230808-001",
+    "mode": 0,
+    "state": 0,
+    "launchTime": 1691481600000,
+    "expectedEndTime": 1691568000000,
+    "deviceId": "DEVICE-UUID-001",
+    "isPatientSubscribed": false
+  },
+  {
+    "measureRecordOid": 12346,
+    "measureRecordId": "MR-20230808-002",
+    "mode": 0,
+    "state": 0,
+    "launchTime": 1691481700000,
+    "expectedEndTime": 1691568100000,
+    "deviceId": "DEVICE-UUID-002",
+    "isPatientSubscribed": true
+  }
+]
+```
+
+**Response Model (MeasurementInfo):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `measureRecordOid` | Integer | Measurement record OID |
+| `measureRecordId` | String | Measurement record ID |
+| `mode` | Integer | 錄製模式 (see MeasureMode in API #4) |
+| `state` | Integer | 量測狀態 (see MeasurementState in API #4) |
+| `launchTime` | Long | 開始錄製時間 (Unix timestamp ms) |
+| `expectedEndTime` | Long | 預計結束時間 (Unix timestamp ms) |
+| `deviceId` | String | Device UUID |
+| `isPatientSubscribed` | Boolean | 是否已有其他 client 訂閱此量測紀錄 |
+
+**Client-Side Logic:**
+
+依回傳陣列大小決定 UI 行為：
+
+| 數量 | 行為 |
+|------|------|
+| `0` | 顯示錯誤 Alert：「沒有任何裝置開始錄製」，返回登入頁 |
+| `1` | 自動彈出裝置下拉選單（僅一個選項） |
+| `≥ 2` | 先顯示警告 Alert：「Duplicate Patient ID detected. Please verify before setting.」，使用者按 OK 後彈出下拉選單 |
+
+**裝置下拉選單顯示規則：**
+
+| `isPatientSubscribed` | 下拉選單顯示文字 | 說明 |
+|---|---|---|
+| `false` | `{deviceId}` | 尚未被登入的裝置 |
+| `true` | `{deviceId} (已登入)` | 已有其他 client 訂閱中 |
+
+> **多國語言**：「已登入」對應 key 為 `"Has been logged in"`。使用者仍可選擇已被登入的裝置（server 會決定是否允許），但 UI 需明確標示。
+
+使用者從下拉選單選擇裝置並按「完成」後，儲存該筆 `measureRecordId`，接著呼叫 Auth Patient (API #3)。
+
+**Retrofit Example:**
+
+```kotlin
+interface RootiApiService {
+
+    @GET("/api/v1/institutions/{institutionId}/patients/{patientId}/recordingMeasurements")
+    suspend fun getRecordingMeasurements(
+        @Path("institutionId") institutionId: String,
+        @Path("patientId") patientId: String
+    ): Response<List<MeasurementInfo>>
+}
+
+// MeasurementInfo 定義見 API #4，此處新增 isPatientSubscribed 欄位
+data class MeasurementInfo(
+    val measureRecordOid: Long,
+    val measureRecordId: String,
+    val mode: Int,
+    val state: Int,
+    val launchTime: Long,
+    val expectedEndTime: Long,
+    val deviceId: String,
+    val isPatientSubscribed: Boolean = false
+) {
+    fun isMeasuring(): Boolean {
+        val now = System.currentTimeMillis()
+        return state == STATE_MEASURING
+            && expectedEndTime != 0L
+            && now < expectedEndTime
+    }
+
+    fun isVirtualTagMode(): Boolean = mode == MODE_VIRTUAL_TAG
+
+    /** 下拉選單顯示文字 */
+    fun displayText(context: Context): String {
+        return if (isPatientSubscribed) {
+            "$deviceId (${context.getString(R.string.has_been_logged_in)})"
+        } else {
+            deviceId
+        }
+    }
+
+    companion object {
+        const val STATE_MEASURING = 0
+        const val MODE_VIRTUAL_TAG = 0  // Holter
+        const val MODE_MONITOR = 1
+        const val MODE_MCT_TAG = 2
+    }
+}
+
+// Usage in login flow
+val response = apiService.getRecordingMeasurements(institutionId, patientId)
+val measurements = response.body() ?: run { handleError(); return }
+
+when {
+    measurements.isEmpty() -> {
+        showAlert(context.getString(R.string.no_device_recording))
+        return
+    }
+    measurements.size >= 2 -> {
+        showAlert(context.getString(R.string.duplicate_patient_id_warning)) {
+            // OK button handler
+            showDevicePicker(measurements)
+        }
+    }
+    else -> {
+        showDevicePicker(measurements)
+    }
+}
+```
+
+---
+
+### 3. Auth Patient (Subscribe Patient MCT Events)
+
+驗證並訂閱病患，取得病患資訊。用於登入流程，在使用者從裝置下拉選單選擇裝置後呼叫。
+
+| Item | Value |
+|------|-------|
+| **Method** | `GET` |
+| **Path** | `/oauth/vendors/{institutionId}/patients/{patientId}/measures/{measureId}` |
+| **Authentication** | Bearer Token |
+| **Request Body** | None |
+
+**Request Headers:**
+
+```
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `institutionId` | String | Yes | Institution/vendor identifier |
+| `patientId` | String | Yes | Patient identifier (ID number) |
+| `measureId` | String | Yes | 使用者選擇的 measurement record ID（來自 API #2） |
 
 **Response (200 OK):**
 
@@ -232,10 +472,11 @@ Client Message: `This patient is already logged in.`
 ```kotlin
 interface RootiApiService {
 
-    @GET("/oauth/vendors/{institutionId}/patients/{patientId}")
+    @GET("/oauth/vendors/{institutionId}/patients/{patientId}/measures/{measureId}")
     suspend fun authPatient(
         @Path("institutionId") institutionId: String,
-        @Path("patientId") patientId: String
+        @Path("patientId") patientId: String,
+        @Path("measureId") measureId: String
     ): Response<AuthPatientResponse>
 }
 
@@ -265,14 +506,14 @@ fun handleAuthPatientError(errorBody: ResponseBody?): String {
 
 ---
 
-### 3. Get Current Measurement Info
+### 4. Get Current Measurement Info
 
-取得病患目前的量測資訊（Virtual Tag）。登入成功後呼叫，用於判斷是否正在錄製中及錄製模式。
+取得病患目前的量測資訊（Virtual Tag）。Auth Patient (API #3) 成功後呼叫，用於判斷是否正在錄製中及錄製模式。
 
 | Item | Value |
 |------|-------|
 | **Method** | `GET` |
-| **Path** | `/api/v1/institutions/{institutionId}/patients/{patientId}/measures/currentMeasurement` |
+| **Path** | `/api/v1/institutions/{institutionId}/patients/{patientId}/measures/{measureId}` |
 | **Authentication** | Bearer Token |
 | **Request Body** | None |
 
@@ -289,6 +530,7 @@ Authorization: Bearer {token}
 |-----------|------|----------|-------------|
 | `institutionId` | String | Yes | Institution/vendor identifier |
 | `patientId` | String | Yes | Patient identifier (ID number) |
+| `measureId` | String | Yes | 使用者選擇的 measurement record ID（來自 API #2） |
 
 **Response (200 OK):**
 
@@ -300,7 +542,8 @@ Authorization: Bearer {token}
   "state": 0,
   "launchTime": 1691481600000,
   "expectedEndTime": 1691568000000,
-  "deviceId": "DEVICE-UUID-001"
+  "deviceId": "DEVICE-UUID-001",
+  "isPatientSubscribed": false
 }
 ```
 
@@ -313,6 +556,7 @@ Authorization: Bearer {token}
 | `launchTime` | Long | 開始錄製時間 (Unix timestamp ms) |
 | `expectedEndTime` | Long | 預計結束時間 (Unix timestamp ms) |
 | `deviceId` | String | Device UUID |
+| `isPatientSubscribed` | Boolean | 是否已有其他 client 訂閱此量測紀錄 |
 
 **MeasureMode enum:**
 
@@ -381,13 +625,15 @@ Authorization: Bearer {token}
 ```kotlin
 interface RootiApiService {
 
-    @GET("/api/v1/institutions/{institutionId}/patients/{patientId}/measures/currentMeasurement")
+    @GET("/api/v1/institutions/{institutionId}/patients/{patientId}/measures/{measureId}")
     suspend fun getCurrentMeasurementInfo(
         @Path("institutionId") institutionId: String,
-        @Path("patientId") patientId: String
+        @Path("patientId") patientId: String,
+        @Path("measureId") measureId: String
     ): Response<MeasurementInfo>
 }
 
+// MeasurementInfo 同時用於 API #2 和 API #4
 data class MeasurementInfo(
     val measureRecordOid: Long,
     val measureRecordId: String,
@@ -395,7 +641,8 @@ data class MeasurementInfo(
     val state: Int,
     val launchTime: Long,
     val expectedEndTime: Long,
-    val deviceId: String
+    val deviceId: String,
+    val isPatientSubscribed: Boolean = false
 ) {
     fun isMeasuring(): Boolean {
         val now = System.currentTimeMillis()
@@ -415,7 +662,7 @@ data class MeasurementInfo(
 }
 
 // Usage in login flow
-val response = apiService.getCurrentMeasurementInfo(institutionId, patientId)
+val response = apiService.getCurrentMeasurementInfo(institutionId, patientId, measureId)
 val info = response.body() ?: run { handleError(); return }
 
 // Step 1: Check measuring
@@ -438,7 +685,7 @@ loadEventTagHistory()
 
 ---
 
-### 4. Get Total History Event Tag Count
+### 5. Get Total History Event Tag Count
 
 取得歷史 Event Tag 總筆數。用於登入後判斷是否需要下載歷史紀錄。
 
@@ -483,7 +730,7 @@ Authorization: Bearer {token}
 
 ```
 if totalRow > 0:
-    開始分頁下載歷史紀錄 (API #5)
+    開始分頁下載歷史紀錄 (API #6)
 else:
     直接進入主頁
 ```
@@ -519,7 +766,7 @@ if (totalRow > 0) {
 
 ---
 
-### 5. Get Event Tag History (Paginated)
+### 6. Get Event Tag History (Paginated)
 
 分頁取得歷史 Event Tag 紀錄。
 
@@ -769,14 +1016,14 @@ suspend fun saveToDatabase(
 
 ---
 
-### 6. Unsubscribe Patient
+### 7. Unsubscribe Patient
 
 取消訂閱病患，用於登出流程。呼叫後無論成功或失敗，Client 端皆應清除本地資料並登出。
 
 | Item | Value |
 |------|-------|
 | **Method** | `POST` |
-| **Path** | `/oauth/vendors/{institutionId}/patients/{patientId}/unsubscribe` |
+| **Path** | `/oauth/vendors/{institutionId}/patients/{patientId}/measures/{measureId}/unsubscribe` |
 | **Authentication** | Bearer Token |
 | **Request Body** | None |
 
@@ -793,6 +1040,7 @@ Authorization: Bearer {token}
 |-----------|------|----------|-------------|
 | `institutionId` | String | Yes | Institution/vendor identifier |
 | `patientId` | String | Yes | Patient identifier |
+| `measureId` | String | Yes | Measurement record ID（登入時選擇並儲存的值） |
 
 **Response (200 OK):**
 
@@ -846,10 +1094,11 @@ Authorization: Bearer {token}
 ```kotlin
 interface RootiApiService {
 
-    @POST("/oauth/vendors/{institutionId}/patients/{patientId}/unsubscribe")
+    @POST("/oauth/vendors/{institutionId}/patients/{patientId}/measures/{measureId}/unsubscribe")
     suspend fun unsubscribePatient(
         @Path("institutionId") institutionId: String,
-        @Path("patientId") patientId: String
+        @Path("patientId") patientId: String,
+        @Path("measureId") measureId: String
     ): Response<UnsubscribeResponse>
 }
 
@@ -862,7 +1111,7 @@ data class UnsubscribeResponse(
 // Usage: Logout flow
 suspend fun logout() {
     try {
-        apiService.unsubscribePatient(institutionId, patientId)
+        apiService.unsubscribePatient(institutionId, patientId, measureId)
     } catch (e: Exception) {
         Log.e("Logout", "Unsubscribe failed: ${e.message}")
     } finally {
@@ -877,7 +1126,7 @@ suspend fun logout() {
 
 ---
 
-### 7. Add Virtual Event Tags
+### 8. Add Virtual Event Tags
 
 上傳 Virtual Event Tag 紀錄至伺服器。
 
@@ -934,7 +1183,7 @@ Authorization: Bearer {token}
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `tagTime` | Long | Yes | Tag 時間 (Unix timestamp ms) |
-| `exerciseIntensity` | Integer | Yes | 運動強度 (see ExerciseIntensity in API #5) |
+| `exerciseIntensity` | Integer | Yes | 運動強度 (see ExerciseIntensity in API #6) |
 | `symptomTypes` | Object | Yes | 症狀資訊 |
 | `symptomTypes.symptomTypes` | Array\<Integer\> | Yes | 症狀類型 ID 陣列 |
 | `symptomTypes.others` | String? | No | 自訂症狀文字 |
@@ -1023,7 +1272,7 @@ data class VirtualTagRequest(
     val symptomTypes: SymptomTypes
 )
 
-// SymptomTypes already defined in API #5
+// SymptomTypes already defined in API #6
 
 // ---- Response Models ----
 data class AddVirtualTagsResponse(

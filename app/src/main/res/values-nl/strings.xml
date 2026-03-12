@@ -77,4 +77,10 @@
     <string name="no_intensity_recorded">Geen intensiteit geregistreerd</string>
     <string name="back_desc">Terug</string>
     <string name="medical_clinic">Medische kliniek:</string>
+    <string name="invalid_measurement_record">Ongeldig meetrecord.</string>
+    <string name="no_active_subscription_found">Geen actief abonnement gevonden.</string>
+    <string name="device_s_id">Apparaat-ID</string>
+    <string name="has_been_logged_in">Reeds ingelogd</string>
+    <string name="no_device_has_started_recording">Geen apparaat is begonnen met opnemen.</string>
+    <string name="duplicate_patient_id_detected_please_verify_before_setting">Dubbele patiënt-ID gedetecteerd. Controleer voordat u instelt.</string>
 </resources>

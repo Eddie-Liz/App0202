@@ -77,4 +77,10 @@
     <string name="no_intensity_recorded">Keine Intensität erfasst</string>
     <string name="back_desc">Zurück</string>
     <string name="medical_clinic">Medizinische Klinik:</string>
+    <string name="invalid_measurement_record">Ungültiger Messdatensatz.</string>
+    <string name="no_active_subscription_found">Kein aktives Abonnement gefunden.</string>
+    <string name="device_s_id">Geräte-ID</string>
+    <string name="has_been_logged_in">Bereits angemeldet</string>
+    <string name="no_device_has_started_recording">Kein Gerät hat die Aufnahme gestartet.</string>
+    <string name="duplicate_patient_id_detected_please_verify_before_setting">Doppelte Patienten-ID erkannt. Bitte vor dem Festlegen überprüfen.</string>
 </resources>
