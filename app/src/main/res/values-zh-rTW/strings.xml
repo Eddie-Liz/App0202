@@ -88,4 +88,9 @@
     <string name="has_been_logged_in">已登入</string>
     <string name="device_s_id">裝置 ID</string>
     <string name="this_patient_has_been_logged_in">此病患已登入。</string>
+    <string name="please_fill_out_account_id_and_id_number">請填寫帳戶ID與識別代碼</string>
+    <string name="account_id_and_id_number_does_not_allow_space_characters">帳戶ID和識別代碼不能有空白字元</string>
+    <string name="sign_in_failed">登入失敗</string>
+    <string name="invalid_institution_id_patient">無效的機構病患 ID</string>
+    <string name="logout_failed">登出失敗</string>
 </resources>

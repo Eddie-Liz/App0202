@@ -83,4 +83,9 @@
     <string name="has_been_logged_in">Reeds ingelogd</string>
     <string name="no_device_has_started_recording">Geen apparaat is begonnen met opnemen.</string>
     <string name="duplicate_patient_id_detected_please_verify_before_setting">Dubbele patiënt-ID gedetecteerd. Controleer voordat u instelt.</string>
+    <string name="please_fill_out_account_id_and_id_number">Vul alstublieft account-ID en ID-nummer in</string>
+    <string name="account_id_and_id_number_does_not_allow_space_characters">Account-ID en ID-nummer staan geen spaties toe.</string>
+    <string name="sign_in_failed">Aanmelden is mislukt</string>
+    <string name="invalid_institution_id_patient">Ongeldige institutie patient-ID</string>
+    <string name="logout_failed">Uitloggen mislukt</string>
 </resources>

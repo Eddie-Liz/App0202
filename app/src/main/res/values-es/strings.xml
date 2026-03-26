@@ -83,4 +83,9 @@
     <string name="has_been_logged_in">Conectado</string>
     <string name="no_device_has_started_recording">Ningún dispositivo ha comenzado a grabar.</string>
     <string name="duplicate_patient_id_detected_please_verify_before_setting">Se detectó un ID de paciente duplicado. Verifique antes de configurar.</string>
+    <string name="please_fill_out_account_id_and_id_number">Please fill out Account ID and ID Number</string>
+    <string name="account_id_and_id_number_does_not_allow_space_characters">Account ID and ID Number does not allow space characters.</string>
+    <string name="sign_in_failed">Error de inicio de sesión</string>
+    <string name="invalid_institution_id_patient">ID de paciente de institucion invalido</string>
+    <string name="logout_failed">Error al cerrar sesion</string>
 </resources>

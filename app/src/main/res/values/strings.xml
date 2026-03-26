@@ -131,4 +131,7 @@
     <string name="has_been_logged_in">Has been logged in</string>
     <string name="device_s_id">Device ID</string>
     <string name="this_patient_has_been_logged_in">This patient is already logged in.</string>
+    <string name="please_fill_out_account_id_and_id_number">Please fill out Account ID and ID Number</string>
+    <string name="account_id_and_id_number_does_not_allow_space_characters">Account ID and ID Number does not allow space characters.</string>
+    <string name="sign_in_failed">Sign In Failed</string>
 </resources>

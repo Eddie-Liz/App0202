@@ -83,4 +83,9 @@
     <string name="has_been_logged_in">ログイン済み</string>
     <string name="no_device_has_started_recording">録音を開始したデバイスはありません。</string>
     <string name="duplicate_patient_id_detected_please_verify_before_setting">重複する患者IDが検出されました。設定前にご確認ください。</string>
+    <string name="please_fill_out_account_id_and_id_number">アカウントIDとID番号を入力してください</string>
+    <string name="account_id_and_id_number_does_not_allow_space_characters">アカウントIDとID番号にスペースは使用できません。</string>
+    <string name="sign_in_failed">サインイン失敗.</string>
+    <string name="invalid_institution_id_patient">無効な機関患者 ID</string>
+    <string name="logout_failed">ログアウトに失敗しました</string>
 </resources>

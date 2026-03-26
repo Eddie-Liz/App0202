@@ -83,4 +83,9 @@
     <string name="has_been_logged_in">Bereits angemeldet</string>
     <string name="no_device_has_started_recording">Kein Gerät hat die Aufnahme gestartet.</string>
     <string name="duplicate_patient_id_detected_please_verify_before_setting">Doppelte Patienten-ID erkannt. Bitte vor dem Festlegen überprüfen.</string>
+    <string name="please_fill_out_account_id_and_id_number">Bitte Konto-ID und ID-Nummer ausfüllen</string>
+    <string name="account_id_and_id_number_does_not_allow_space_characters">Konto-ID und ID-Nummer dürfen keine Leerzeichen enthalten.</string>
+    <string name="sign_in_failed">Anmeldung fehlgeschlagen</string>
+    <string name="invalid_institution_id_patient">Ungultige Institutionspatienten-ID</string>
+    <string name="logout_failed">Abmeldung fehlgeschlagen</string>
 </resources>
