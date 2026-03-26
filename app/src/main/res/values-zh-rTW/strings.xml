@@ -93,4 +93,5 @@
     <string name="sign_in_failed">登入失敗</string>
     <string name="invalid_institution_id_patient">無效的機構病患 ID</string>
     <string name="logout_failed">登出失敗</string>
+    <string name="virtual_tag">數位標記</string>
 </resources>

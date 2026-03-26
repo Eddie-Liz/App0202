@@ -88,4 +88,5 @@
     <string name="sign_in_failed">Échec d\'enregistrement</string>
     <string name="invalid_institution_id_patient">ID patient de l\'etablissement invalide</string>
     <string name="logout_failed">Echec de la deconnexion</string>
+    <string name="virtual_tag">Tag virtuel</string>
 </resources>
