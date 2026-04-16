@@ -519,9 +519,11 @@ fun DeviceSelectionSheet(
                             ) {
                                 Text(
                                     text = displayText,
-                                    fontSize = 24.sp,
+                                    fontSize = if (isLogged) 20.sp else 24.sp,
                                     color = if (isSelected) Color.Gray else Color.LightGray,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    softWrap = false
                                 )
                             }
                         }

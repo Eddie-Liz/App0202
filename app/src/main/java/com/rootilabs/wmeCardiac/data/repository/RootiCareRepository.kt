@@ -245,11 +245,8 @@ class RootiCareRepository(
             val response = try {
                 rootiCareApi.unsubscribePatient(institutionId, patientId, measureId)
             } catch (e: Exception) {
-                Log.e(TAG, "Logout network error: ${e.message}. Enqueuing LogoutWorker.")
-                tokenManager.offlineLogoutPending = true
-                enqueueLogoutWorker(institutionId, patientId, measureId)
-                clearLocalData()
-                return Result.success(Unit)
+                Log.e(TAG, "Logout network error: ${e.message}")
+                return Result.failure(Exception("無網路連線"))
             }
 
             val statusCode = response.code()
@@ -263,11 +260,8 @@ class RootiCareRepository(
                 Result.success(Unit)
             } else {
                 val errorMsg = response.errorBody()?.string() ?: "伺服器錯誤 ($statusCode)"
-                Log.w(TAG, "Logout server error: $statusCode - $errorMsg. Enqueuing LogoutWorker.")
-                tokenManager.offlineLogoutPending = true
-                enqueueLogoutWorker(institutionId, patientId, measureId)
-                clearLocalData()
-                Result.success(Unit)
+                Log.w(TAG, "Logout server error: $statusCode - $errorMsg")
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Logout critical error", e)

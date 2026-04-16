@@ -18,8 +18,8 @@ android {
         applicationId = "com.rootilabs.wmeCardiac"
         minSdk = 24
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.0.7"
+        versionCode = 9
+        versionName = "1.0.8"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -33,6 +33,11 @@ android {
             firebaseAppDistribution {
                 artifactType = "APK"
                 releaseNotes = """
+                    [v1.0.8 Offline Logout & UI Fixes]
+                    - EN: Update logout logic to properly handle network errors; logout will fail instead of clearing local states.
+                    - CH: 修正斷網時的登出流程，在無網路時會直接失敗並保留本地帳號資料。
+                    - EN: Realigned device selection text layout to fit on one row.
+                    - CH: 修改裝置選單列表文字大小與強制單行，避免在過小螢幕發生換行擠壓。
                     [v1.0.7 UI Refactor & Login Logic]
                     - EN: Refactored Login UI to a modern flat rectangular design with bold text and simplified layout.
                     - CH: 重構登入介面為簡約平面直角設計，並優化字體加粗顯示與佈局。
