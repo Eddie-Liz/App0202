@@ -24,11 +24,12 @@ data class LoginUiState(
     val selectedDeviceIsLoggedIn: Boolean = false,
     val showDeviceSheet: Boolean = false,
     val showServerSheet: Boolean = false,
+    val showAlreadyLoggedInAlert: Boolean = false,
     val transientErrorMessage: String? = null
 )
 
 enum class ServerRegion(val label: String, val url: String) {
-    AP("Asia-Pacific 1", "http://192.168.103.17:8080/"),
+    AP("Asia-Pacific 1", "https://mct-api.rooticare.com/"),
     AP2("Asia-Pacific 2", "https://mct2-api.rooticare.com/"),
     EU("Europe", "https://mcteu-api.rooticare.com/")
 }
@@ -52,13 +53,17 @@ class LoginViewModel : ViewModel() {
             uiState = uiState.copy(error = "FIELDS_REQUIRED")
             return
         }
+        if (institutionId.contains("\\s".toRegex()) || patientId.contains("\\s".toRegex())) {
+            uiState = uiState.copy(error = "FIELDS_NO_SPACES")
+            return
+        }
         viewModelScope.launch {
             // If we already have a selected device (and it's not logged in), 
             // perform the second phase of login.
             val selectedRecordId = uiState.selectedMeasureRecordId
             if (selectedRecordId != null) {
                 if (uiState.selectedDeviceIsLoggedIn) {
-                    uiState = uiState.copy(error = "ALREADY_LOGGED_IN")
+                    uiState = uiState.copy(showAlreadyLoggedInAlert = true)
                     return@launch
                 }
                 startPhase2(selectedRecordId)
@@ -105,32 +110,12 @@ class LoginViewModel : ViewModel() {
 
             Log.d(TAG, "Found ${measurements.size} measurements")
             
-            if (measurements.size == 1) {
-                val singleInfo = measurements[0]
-                val recordId = singleInfo.measureRecordId
-                if (recordId != null) {
-                    uiState = uiState.copy(
-                        selectedDeviceId = singleInfo.deviceId,
-                        selectedMeasureRecordId = recordId,
-                        selectedDeviceIsLoggedIn = singleInfo.isPatientSubscribed == true,
-                        measurements = measurements,
-                        isLoading = false,
-                        error = if (singleInfo.isPatientSubscribed == true) "ALREADY_LOGGED_IN" else null
-                    )
-                    
-                    if (singleInfo.isPatientSubscribed != true) {
-                        startPhase2(recordId)
-                    }
-                    return
-                }
-            }
-
-            // Phase 1 Success: Show selection UI
+            // Phase 1 Success: Show selection UI directly
             uiState = uiState.copy(
                 isLoading = false,
                 measurements = measurements,
-                showDuplicateWarning = measurements.size >= 2,
-                showDeviceSheet = true // Show the iOS-style picker
+                showDuplicateWarning = false, // Always skip independent warning screen
+                showDeviceSheet = true      // Always show selection sheet directly
             )
         } catch (e: Throwable) {
             Log.e(TAG, "Error in login phase 1", e)
@@ -151,9 +136,11 @@ class LoginViewModel : ViewModel() {
         )
 
         if (info.isPatientSubscribed == true) {
-            uiState = uiState.copy(error = "ALREADY_LOGGED_IN")
+            uiState = uiState.copy(error = "ALREADY_LOGGED_IN", showAlreadyLoggedInAlert = true)
+        } else {
+            // Auto proceed to Phase 2 (Authentication)
+            startPhase2(measureId)
         }
-        // Removed startPhase2(info) call - user must click Login button again
     }
 
     private fun startPhase2(measureId: String) {
@@ -247,7 +234,18 @@ class LoginViewModel : ViewModel() {
     }
 
     fun onDismissDuplicateWarning() {
-        uiState = uiState.copy(showDuplicateWarning = false)
+        uiState = uiState.copy(showDuplicateWarning = false, showDeviceSheet = true)
+    }
+
+    fun onDismissAlreadyLoggedInAlert() {
+        uiState = uiState.copy(
+            showAlreadyLoggedInAlert = false,
+            selectedMeasureRecordId = null,
+            selectedDeviceId = null,
+            selectedDeviceIsLoggedIn = false,
+            error = null,
+            showDeviceSheet = true
+        )
     }
     
     fun onDismissDeviceSheet() {

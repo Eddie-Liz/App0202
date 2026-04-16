@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Person
@@ -62,33 +63,56 @@ fun LoginScreen(
         )
     }
 
-    if (uiState.showDuplicateWarning) {
-        AlertDialog(
-            onDismissRequest = { viewModel.onDismissDuplicateWarning() },
-            containerColor = Color(0xFF2D2D2D), // Dark grey background to match mockup
-            title = { 
-                Text(
-                    stringResource(R.string.warning), 
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                ) 
-            },
-            text = { 
-                Text(
-                    stringResource(R.string.duplicate_patient_id_detected_please_verify_before_setting),
-                    color = Color.White.copy(alpha = 0.8f)
-                ) 
-            },
-            confirmButton = {
-                TextButton(onClick = { viewModel.onDismissDuplicateWarning() }) {
-                    Text(
-                        stringResource(id = R.string.confirm), 
-                        fontWeight = FontWeight.Bold,
-                        color = TagGoGreen // Green accent color for action
-                    )
+
+    if (uiState.showAlreadyLoggedInAlert) {
+        androidx.compose.ui.window.Dialog(onDismissRequest = { viewModel.onDismissAlreadyLoggedInAlert() }) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth(0.9f).wrapContentHeight()
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(48.dp).background(TagGoGreen),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("test", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    }
+                    
+                    Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            stringResource(R.string.warning),
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                        )
+                        Text(
+                            stringResource(R.string.this_patient_has_been_logged_in),
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(
+                            onClick = { viewModel.onDismissAlreadyLoggedInAlert() },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = TagGoGreen),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(stringResource(id = R.string.confirm), color = Color.White, fontSize = 18.sp)
+                        }
+                    }
                 }
             }
-        )
+        }
     }
 
     if (uiState.showDeviceSheet) {
@@ -186,7 +210,7 @@ fun LoginScreen(
             // Account ID
             BasicTextField(
                 value = viewModel.institutionId,
-                onValueChange = { viewModel.institutionId = it.trim() },
+                onValueChange = { viewModel.institutionId = it },
                 modifier = Modifier.fillMaxWidth().height(48.dp).background(Color.White),
                 enabled = !uiState.isLoading,
                 singleLine = true,
@@ -210,7 +234,7 @@ fun LoginScreen(
             // ID Number
             BasicTextField(
                 value = viewModel.patientId,
-                onValueChange = { viewModel.patientId = it.trim() },
+                onValueChange = { viewModel.patientId = it },
                 modifier = Modifier.fillMaxWidth().height(48.dp).background(Color.White),
                 enabled = !uiState.isLoading,
                 singleLine = true,
@@ -265,58 +289,58 @@ fun LoginScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Device ID (裝置 ID) - Read-only but clickable to show sheet if loaded
-            Box(modifier = Modifier.fillMaxWidth()) {
-                val deviceDisplayText = if (uiState.selectedDeviceId != null) {
-                    if (uiState.selectedDeviceIsLoggedIn) {
-                        "${uiState.selectedDeviceId} (${stringResource(R.string.has_been_logged_in)})"
+            if (uiState.measurements.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Device ID (裝置 ID) - Read-only but clickable to show sheet if loaded
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    val deviceDisplayText = if (uiState.selectedDeviceId != null) {
+                        if (uiState.selectedDeviceIsLoggedIn) {
+                            "${uiState.selectedDeviceId} (${stringResource(R.string.has_been_logged_in)})"
+                        } else {
+                            uiState.selectedDeviceId
+                        }
                     } else {
-                        uiState.selectedDeviceId
+                        ""
                     }
-                } else {
-                    ""
-                }
-                BasicTextField(
-                    value = deviceDisplayText,
-                    onValueChange = { },
-                    modifier = Modifier.fillMaxWidth().height(48.dp).background(Color.White),
-                    readOnly = true,
-                    enabled = !uiState.isLoading,
-                    singleLine = true,
-                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 17.sp, color = Color.Black, fontWeight = FontWeight.Bold),
-                    decorationBox = { innerTextField ->
-                        Row(
-                            modifier = Modifier.padding(horizontal = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                                if (deviceDisplayText.isEmpty()) {
-                                    Text(stringResource(id = R.string.device_s_id), color = Color.LightGray, fontSize = 17.sp)
+                    BasicTextField(
+                        value = deviceDisplayText,
+                        onValueChange = { },
+                        modifier = Modifier.fillMaxWidth().height(48.dp).background(Color.White),
+                        readOnly = true,
+                        enabled = !uiState.isLoading,
+                        singleLine = true,
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 17.sp, color = Color.Black, fontWeight = FontWeight.Bold),
+                        decorationBox = { innerTextField ->
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                                    if (deviceDisplayText.isEmpty()) {
+                                        Text(stringResource(id = R.string.device_s_id), color = Color.LightGray, fontSize = 17.sp)
+                                    }
+                                    innerTextField()
                                 }
-                                innerTextField()
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = Color(0xFF9E9E9E),
+                                    modifier = Modifier.size(22.dp)
+                                )
                             }
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = null,
-                                tint = Color(0xFF9E9E9E),
-                                modifier = Modifier.size(22.dp)
-                            )
                         }
-                    }
-                )
-                // Overlay to catch clicks
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clickable(enabled = uiState.measurements.isNotEmpty() && !uiState.isLoading) {
-                            viewModel.onShowDeviceSheet()
-                        }
-                )
+                    )
+                    // Overlay to catch clicks
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clickable(enabled = uiState.measurements.isNotEmpty() && !uiState.isLoading) {
+                                viewModel.onShowDeviceSheet()
+                            }
+                    )
+                }
             }
-
-
 
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -343,15 +367,23 @@ fun LoginScreen(
             // Error message
             if (uiState.error != null) {
                 val errorText = when (uiState.error) {
-                    "FIELDS_REQUIRED"    -> stringResource(R.string.error_fields_required)
+                    "FIELDS_REQUIRED"    -> stringResource(R.string.please_fill_out_account_id_and_id_number)
+                    "FIELDS_NO_SPACES"   -> stringResource(R.string.account_id_and_id_number_does_not_allow_space_characters)
                     "ALREADY_SUBSCRIBED" -> stringResource(R.string.error_already_subscribed)
-                    "TOKEN_FAILED"       -> stringResource(R.string.error_token_failed)
+                    "TOKEN_FAILED", "GET_TOKEN_FAILED" -> stringResource(R.string.sign_in_failed)
+                    "institution is not existed" -> stringResource(R.string.invalid_institution_id_patient)
                     "MEASUREMENT_FAILED" -> stringResource(R.string.error_measurement_failed)
                     "NOT_MEASURING"      , "NO_DEVICE_RECORDING" -> stringResource(R.string.no_device_has_started_recording)
                     "UNSUPPORTED_MODE"   -> stringResource(R.string.error_unsupported_mode)
                     "FATAL_ERROR"        -> stringResource(R.string.error_fatal)
                     "ALREADY_LOGGED_IN"  -> stringResource(R.string.this_patient_has_been_logged_in)
-                    else                 -> uiState.error
+                    else                 -> {
+                        when {
+                            uiState.error.contains("institution is not existed") -> stringResource(R.string.invalid_institution_id_patient)
+                            uiState.error.contains("invalid_patient") -> stringResource(R.string.invalid_patient)
+                            else -> uiState.error
+                        }
+                    }
                 }
                 Card(
                     colors = CardDefaults.cardColors(
@@ -414,49 +446,116 @@ fun DeviceSelectionSheet(
 ) {
     var selectedItem by remember { mutableStateOf<MeasurementInfo?>(null) }
     
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        dragHandle = null,
-        containerColor = Color(0xFFE0E0E0), // Light grey background like iOS
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)) {
-            // Header with Done only
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = { selectedItem?.let { onSelected(it) } }) {
-                    Text(stringResource(R.string.confirm), color = Color(0xFF2196F3), fontWeight = FontWeight.Bold)
-                }
-            }
-            
-            HorizontalDivider(color = Color.LightGray)
-            
-            // List of devices
-            Column(
-                modifier = Modifier.fillMaxWidth().height(200.dp).background(Color.White)
-            ) {
-                measurements.forEach { info ->
-                    val isLogged = info.isPatientSubscribed == true
-                    val displayText = if (isLogged) 
-                        "${info.deviceId} (${stringResource(R.string.has_been_logged_in)})" 
-                        else info.deviceId ?: "Unknown"
-                        
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { selectedItem = info }
-                            .background(if (selectedItem == info) Color(0xFFF5F5F5) else Color.White)
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
+    // Using a custom Dialog for the exact look of the mockup
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            modifier = Modifier.fillMaxWidth(0.9f).wrapContentHeight()
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                // Header
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(48.dp).background(TagGoGreen),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("test", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 4.dp)
                     ) {
-                        Text(
-                            text = displayText,
-                            fontSize = 18.sp,
-                            color = Color.Black
-                        )
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White, modifier = Modifier.size(20.dp).border(1.dp, Color.White, CircleShape).padding(2.dp))
+                    }
+                }
+                
+                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        stringResource(R.string.notice_label),
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                    )
+                    Text(
+                        stringResource(R.string.notice_content),
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                
+                // Selection List Box
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .padding(horizontal = 16.dp)
+                        .background(Color(0xFFF0F0F0)) // Light background for list
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        measurements.forEach { info ->
+                            val isLogged = info.isPatientSubscribed == true
+                            val displayText = if (isLogged) 
+                                "${info.deviceId} (${stringResource(R.string.has_been_logged_in)})" 
+                                else info.deviceId ?: "Unknown"
+                                
+                            val isSelected = selectedItem == info
+                            
+                            Box(
+                                modifier = Modifier
+                                    .padding(vertical = 4.dp)
+                                    .then(
+                                        if (isSelected) Modifier.border(1.dp, TagGoGreen, RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 4.dp)
+                                        else Modifier
+                                    )
+                                    .clickable { selectedItem = info },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = displayText,
+                                    fontSize = 24.sp,
+                                    color = if (isSelected) Color.Gray else Color.LightGray,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Footer buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Button(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f).height(48.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = TagGoGreen),
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(stringResource(R.string.cancel), color = Color.White, fontSize = 18.sp)
+                    }
+                    val isConfirmEnabled = selectedItem != null && selectedItem?.isPatientSubscribed != true
+                    
+                    Button(
+                        onClick = { selectedItem?.let { onSelected(it) } },
+                        modifier = Modifier.weight(1f).height(48.dp),
+                        enabled = isConfirmEnabled,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TagGoGreen,
+                            disabledContainerColor = TagGoGreen.copy(alpha = 0.5f)
+                        ),
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(stringResource(R.string.confirm), color = Color.White, fontSize = 18.sp)
                     }
                 }
             }

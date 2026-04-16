@@ -134,4 +134,7 @@
     <string name="please_fill_out_account_id_and_id_number">Please fill out Account ID and ID Number</string>
     <string name="account_id_and_id_number_does_not_allow_space_characters">Account ID and ID Number does not allow space characters.</string>
     <string name="sign_in_failed">Sign In Failed</string>
+    <string name="notice_label">Notice:</string>
+    <string name="cancel">Cancel</string>
+    <string name="notice_content">This Patient ID has duplicate recordings during the same period. Please confirm the Patient ID is correct and select the SN of the device for this recording.</string>
 </resources>

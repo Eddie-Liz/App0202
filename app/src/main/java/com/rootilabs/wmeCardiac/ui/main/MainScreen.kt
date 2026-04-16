@@ -89,6 +89,7 @@ fun MainScreen(
             if (event == Lifecycle.Event.ON_RESUME) {
                 Log.d("MainScreen", "ON_RESUME: Refreshing recording status...")
                 viewModel.checkRecordingStatus()
+                viewModel.loadEventTags()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -344,11 +345,6 @@ fun MainScreen(
                                     val now = Date()
                                     currentTime.value = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now)
                                     currentDate.value = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(now)
-                                    if (counter % 3 == 0) {
-                                        viewModel.checkRecordingStatus()
-                                        viewModel.loadEventTags()
-                                    }
-                                    counter++
                                     kotlinx.coroutines.delay(1000)
                                 }
                             }

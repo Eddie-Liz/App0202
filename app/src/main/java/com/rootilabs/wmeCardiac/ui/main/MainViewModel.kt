@@ -253,23 +253,60 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    // ---- Tag Flow ----
     fun onTagPressed() {
         if (!uiState.isMeasuring) {
             Log.w(TAG, "onTagPressed: ignored because isMeasuring is false")
             return
         }
-        val now = System.currentTimeMillis() // Pure UTC
-        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-        Log.d(TAG, "onTagPressed: measureRecordId=${tokenManager.measureRecordId}")
-        uiState = uiState.copy(
-            tagFlowStep = TagFlowStep.SYMPTOM_SELECTION,
-            tagTime = now,
-            tagTimeFormatted = formatter.format(Date(now)), // Local Taiwan Time
-            selectedSymptoms = emptyList(),
-            otherSymptom = "",
-            selectedExercise = -1
-        )
+        
+        uiState = uiState.copy(isLoading = true)
+
+        viewModelScope.launch {
+            try {
+                val institutionId = tokenManager.institutionId ?: ""
+                val patientId = tokenManager.patientId ?: ""
+                val localMeasureId = tokenManager.measureRecordId
+
+                if (institutionId.isNotEmpty() && patientId.isNotEmpty() && localMeasureId != null) {
+                    val result = repository.getCurrentMeasurement(institutionId, patientId, localMeasureId)
+                    if (result.isSuccess) {
+                        val info = result.getOrNull()
+                        val isValid = info != null && info.isMeasuring() && info.measureRecordId == localMeasureId
+                        
+                        if (!isValid) {
+                            Log.w(TAG, "onTagPressed verification failed: actually not measuring.")
+                            uiState = uiState.copy(
+                                isMeasuring = false, 
+                                isLoading = false, 
+                                error = "您現在並沒有在錄製中！" // Shows in snackbar
+                            )
+                            tokenManager.isMeasuring = false
+                            return@launch
+                        } else {
+                            uiState = uiState.copy(isMeasuring = true, isStatusVerified = true) 
+                        }
+                    } else {
+                        Log.w(TAG, "onTagPressed warning: server error, allowing offline tagging")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "onTagPressed check failed: ${e.message}, allowing offline tagging")
+            }
+
+            uiState = uiState.copy(isLoading = false)
+
+            val now = System.currentTimeMillis() // Pure UTC
+            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            Log.d(TAG, "onTagPressed: start tag flow, measureRecordId=${tokenManager.measureRecordId}")
+            uiState = uiState.copy(
+                tagFlowStep = TagFlowStep.SYMPTOM_SELECTION,
+                tagTime = now,
+                tagTimeFormatted = formatter.format(Date(now)), // Local Taiwan Time
+                selectedSymptoms = emptyList(),
+                otherSymptom = "",
+                selectedExercise = -1
+            )
+        }
     }
 
     fun toggleSymptom(symptomId: Int) {

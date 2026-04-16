@@ -93,5 +93,9 @@
     <string name="sign_in_failed">登入失敗</string>
     <string name="invalid_institution_id_patient">無效的機構病患 ID</string>
     <string name="logout_failed">登出失敗</string>
+    <string name="invalid_patient">無效的病患</string>
+    <string name="notice_label">請注意：</string>
+    <string name="cancel">取消</string>
+    <string name="notice_content">此病患 ID 於同一時段重複開錄。請確認病患 ID 正確，並選擇本次錄製的裝置 SN。</string>
     <string name="virtual_tag">數位標記</string>
 </resources>
