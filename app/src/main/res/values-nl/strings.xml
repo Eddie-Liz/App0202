@@ -89,4 +89,6 @@
     <string name="invalid_institution_id_patient">Ongeldige institutie patient-ID</string>
     <string name="logout_failed">Uitloggen mislukt</string>
     <string name="virtual_tag">Virtuele Tag</string>
+    <string name="attention_colon">Let op:</string>
+    <string name="this_patient_id_has_duplicate_recordings">Deze patient-ID heeft dubbele opnamen in dezelfde periode. Controleer of de patient-ID correct is en selecteer het apparaat-SN voor deze opname.</string>
 </resources>

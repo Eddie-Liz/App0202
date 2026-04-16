@@ -137,4 +137,6 @@
     <string name="notice_label">Notice:</string>
     <string name="cancel">Cancel</string>
     <string name="notice_content">This Patient ID has duplicate recordings during the same period. Please confirm the Patient ID is correct and select the SN of the device for this recording.</string>
+    <string name="attention_colon">Attention:</string>
+    <string name="this_patient_id_has_duplicate_recordings">This Patient ID has duplicate recordings in the same period. Please verify the Patient ID is correct and select the Device SN for this recording.</string>
 </resources>

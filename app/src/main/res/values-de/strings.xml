@@ -89,4 +89,6 @@
     <string name="invalid_institution_id_patient">Ungultige Institutionspatienten-ID</string>
     <string name="logout_failed">Abmeldung fehlgeschlagen</string>
     <string name="virtual_tag">Virtueller Tag</string>
+    <string name="attention_colon">Achtung:</string>
+    <string name="this_patient_id_has_duplicate_recordings">Diese Patienten-ID hat doppelte Aufnahmen im selben Zeitraum. Bitte überprüfen Sie die Patienten-ID und wählen Sie die Geräte-SN für diese Aufnahme aus.</string>
 </resources>

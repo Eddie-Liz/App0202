@@ -89,4 +89,6 @@
     <string name="invalid_institution_id_patient">ID patient de l\'etablissement invalide</string>
     <string name="logout_failed">Echec de la deconnexion</string>
     <string name="virtual_tag">Tag virtuel</string>
+    <string name="attention_colon">Attention :</string>
+    <string name="this_patient_id_has_duplicate_recordings">Cet identifiant patient a des enregistrements en double sur la meme periode. Veuillez verifier que l\'identifiant patient est correct et selectionner le SN de l\'appareil pour cet enregistrement.</string>
 </resources>

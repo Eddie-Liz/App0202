@@ -89,4 +89,6 @@
     <string name="invalid_institution_id_patient">ID de paciente de institucion invalido</string>
     <string name="logout_failed">Error al cerrar sesion</string>
     <string name="virtual_tag">Etiqueta virtual</string>
+    <string name="attention_colon">Atencion:</string>
+    <string name="this_patient_id_has_duplicate_recordings">Este ID de paciente tiene grabaciones duplicadas en el mismo periodo. Verifique que el ID de paciente sea correcto y seleccione el SN del dispositivo para esta grabacion.</string>
 </resources>

@@ -89,4 +89,6 @@
     <string name="invalid_institution_id_patient">ID paziente istituzione non valido</string>
     <string name="logout_failed">Disconnessione non riuscita</string>
     <string name="virtual_tag">Tag virtuale</string>
+    <string name="attention_colon">Attenzione:</string>
+    <string name="this_patient_id_has_duplicate_recordings">Questo ID paziente ha registrazioni duplicate nello stesso periodo. Verificare che l\'ID paziente sia corretto e selezionare il SN del dispositivo per questa registrazione.</string>
 </resources>

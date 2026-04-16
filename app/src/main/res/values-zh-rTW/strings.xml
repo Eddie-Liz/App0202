@@ -98,4 +98,6 @@
     <string name="cancel">取消</string>
     <string name="notice_content">此病患 ID 於同一時段重複開錄。請確認病患 ID 正確，並選擇本次錄製的裝置 SN。</string>
     <string name="virtual_tag">數位標記</string>
+    <string name="attention_colon">請注意:</string>
+    <string name="this_patient_id_has_duplicate_recordings">此病患ID於同一時段重複開錄。請確認病患ID正確，並選擇本次錄製的裝置SN。</string>
 </resources>
