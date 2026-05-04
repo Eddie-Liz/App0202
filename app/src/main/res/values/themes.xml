@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.TagGo" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.TagGo" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Transparent bars via XML avoids calling the deprecated
+             Window.setStatusBarColor / Window.setNavigationBarColor Java APIs -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 
     <style name="Theme.TagGo.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@android:color/transparent</item>
