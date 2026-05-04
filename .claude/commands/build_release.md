@@ -2,7 +2,7 @@
 
 ## 步驟
 
-1. 從 `app/build.gradle.kts` 確認 `versionName` 與 `versionCode`
+1. 從 `app/build.gradle.kts` 確認 `versionName`（腳本會自動遞增 `versionCode`）
 2. 用 tmux 執行 `.claude/commands/build_release.sh`：
    - socket: `${TMPDIR:-/tmp}/claude-tmux-sockets/claude.sock`
    - session 名稱: `build-release`
