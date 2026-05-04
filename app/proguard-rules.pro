@@ -24,9 +24,15 @@
 -dontwarn retrofit2.KotlinExtensions$*
 
 # Retrofit API interfaces - must NOT be obfuscated or renamed.
-# R8 strips generic Signature from Continuation<T> when renaming interfaces,
-# causing ClassCastException when Retrofit reads parameterized types via reflection.
 -keep interface com.rootilabs.wmeCardiac.data.api.** { *; }
+
+# Retrofit + Kotlin suspend: Signature attribute cross-reference fix.
+# R8 renames kotlin.coroutines.Continuation (→ x8.c) and retrofit2.Response (→ ic.s0)
+# but does NOT update Signature attributes inside explicitly kept classes.
+# At runtime JVM can't resolve the original names → getGenericParameterTypes() returns raw
+# Class instead of ParameterizedType → ClassCastException in HttpServiceMethod.parseAnnotations.
+-keep class kotlin.coroutines.Continuation
+-keep class retrofit2.Response
 
 # OkHttp
 -dontwarn okhttp3.**

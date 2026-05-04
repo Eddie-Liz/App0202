@@ -77,7 +77,7 @@ ViewModels access `ServiceLocator.repository` directly. There is no StateFlow; s
 
 Minification is enabled. Known critical rules in `app/proguard-rules.pro`:
 
-- `-keep interface com.rootilabs.wmeCardiac.data.api.**` — prevents R8 stripping generic `Signature` from Retrofit suspend interfaces, which causes `ClassCastException` on `Continuation<T>` at runtime
+- `-keep interface com.rootilabs.wmeCardiac.data.api.**` + `-keep class kotlin.coroutines.Continuation` + `-keep class retrofit2.Response` — R8 renames `Continuation` and `Response` but does NOT update their references inside Signature attributes of explicitly kept classes; JVM can't resolve the original names → `getGenericParameterTypes()` returns raw `Class` instead of `ParameterizedType` → `ClassCastException` in `HttpServiceMethod.parseAnnotations:46`
 - `-keep class com.google.mlkit.vision.barcode.BarcodeScanning` — prevents R8 from removing the class and its `<clinit>`, which would cause NPE when the barcode scanner is opened
 - `-keep class com.google.mlkit.**` — required companion rule
 
