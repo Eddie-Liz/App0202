@@ -8,7 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rootilabs.wmeCardiac.di.ServiceLocator
 import com.rootilabs.wmeCardiac.data.model.MeasurementInfo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class LoginUiState(
     val isLoading: Boolean = false,
@@ -193,33 +195,26 @@ class LoginViewModel : ViewModel() {
                     return@launch
                 }
 
-                // Update TokenManager
+                // Update TokenManager — single IO-thread commit for all measurement fields
                 val tokenManager = ServiceLocator.tokenManager
                 tokenManager.isMeasuring = true
-                if (measurementInfo.deviceId != null) {
-                    tokenManager.serverDeviceId = measurementInfo.deviceId
-                }
-
-                // Lock measureRecordId
                 repository.clearLocalEventTags()
-                if (tokenManager.measureRecordId == null) {
-                    tokenManager.measureRecordId = measureId
+                withContext(Dispatchers.IO) {
+                    tokenManager.persistMeasurementInfo(
+                        serverDeviceId = measurementInfo.deviceId,
+                        measureRecordId = measureId
+                    )
                 }
 
                 // Step 5: Sync History
                 uiState = uiState.copy(statusMessage = "STATUS_SYNCING")
                 val countResult = repository.getTotalHistoryCount(institutionId, patientId, measureId)
                 val totalRow = countResult.getOrNull() ?: 0
-                
+
                 if (totalRow > 0) {
                     uiState = uiState.copy(statusMessage = "STATUS_DOWNLOADING:$totalRow")
                     repository.fetchAllEventTagHistory(institutionId, patientId, measureId)
                 }
-
-                // Finish
-                tokenManager.institutionId = institutionId
-                tokenManager.patientId = patientId
-                tokenManager.lastLoggedOutMeasureId = null
                 
                 uiState = uiState.copy(isLoading = false, loginSuccess = true)
             } catch (e: Exception) {

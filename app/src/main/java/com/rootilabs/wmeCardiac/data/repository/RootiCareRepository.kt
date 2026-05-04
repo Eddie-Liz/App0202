@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.work.*
 import androidx.work.workDataOf
 import androidx.work.OneTimeWorkRequestBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.rootilabs.wmeCardiac.Constants
 import com.rootilabs.wmeCardiac.data.api.AuthApi
 import com.rootilabs.wmeCardiac.data.api.RootiCareApi
@@ -39,7 +41,7 @@ class RootiCareRepository(
             if (response.isSuccessful) {
                 val token = response.body()?.accessToken
                 if (token != null) {
-                    tokenManager.accessToken = token
+                    withContext(Dispatchers.IO) { tokenManager.accessToken = token }
                     Result.success(token)
                 } else {
                     Result.failure(Exception("Token is null"))
@@ -83,11 +85,14 @@ class RootiCareRepository(
                 Log.d(TAG, "authPatient response: vendorName=${body?.vendorName}, subscribedBefore=${body?.subscribedBefore}")
 
                 if (body?.vendorName != null) {
-                    tokenManager.institutionId = institutionId
-                    tokenManager.patientId = patientId
-                    tokenManager.vendorName = body.vendorName
-                    tokenManager.isLoggedIn = true
-                    tokenManager.loginTime = System.currentTimeMillis()
+                    withContext(Dispatchers.IO) {
+                        tokenManager.persistLoginSession(
+                            institutionId = institutionId,
+                            patientId = patientId,
+                            vendorName = body.vendorName,
+                            loginTime = System.currentTimeMillis()
+                        )
+                    }
                     Log.d(TAG, "authPatient success: vendorName=${body.vendorName}")
                     Result.success(body)
                 } else {
@@ -255,8 +260,7 @@ class RootiCareRepository(
 
             if (response.isSuccessful) {
                 Log.d(TAG, "Logout success, clearing local data")
-                tokenManager.offlineLogoutPending = false
-                clearLocalData()
+                clearLocalData(clearPendingLogout = true)
                 Result.success(Unit)
             } else {
                 val errorMsg = response.errorBody()?.string() ?: "伺服器錯誤 ($statusCode)"
@@ -384,9 +388,9 @@ class RootiCareRepository(
         }
     }
 
-    suspend fun clearLocalData() {
+    suspend fun clearLocalData(clearPendingLogout: Boolean = false) {
         database.eventTagDao().clearAll()
-        tokenManager.clearAll()
+        tokenManager.clearAll(clearPendingLogout)
     }
 
     suspend fun clearLocalEventTags() {
