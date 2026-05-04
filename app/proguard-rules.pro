@@ -23,6 +23,11 @@
 -dontwarn retrofit2.KotlinExtensions
 -dontwarn retrofit2.KotlinExtensions$*
 
+# Retrofit API interfaces - must NOT be obfuscated or renamed.
+# R8 strips generic Signature from Continuation<T> when renaming interfaces,
+# causing ClassCastException when Retrofit reads parameterized types via reflection.
+-keep interface com.rootilabs.wmeCardiac.data.api.** { *; }
+
 # OkHttp
 -dontwarn okhttp3.**
 -dontwarn okio.**
@@ -50,3 +55,19 @@
 # App data models (Moshi needs these intact)
 -keep class com.rootilabs.wmeCardiac.data.model.** { *; }
 -keep class com.rootilabs.wmeCardiac.data.auth.** { *; }
+
+# WorkManager
+# Workers are instantiated by class name string stored in WorkManager's SQLite DB.
+# R8 renaming the class breaks the lookup even if WorkManager's consumer rules run first.
+-keep class * extends androidx.work.Worker { *; }
+-keep class * extends androidx.work.CoroutineWorker { *; }
+-keep class * extends androidx.work.ListenableWorker {
+    public <init>(android.content.Context, androidx.work.WorkerParameters);
+}
+
+# ML Kit Barcode Scanning
+# BarcodeScanning was being removed by R8 (R8$$REMOVED$$CLASS$$711), losing its static
+# initializer which triggers MlKitContext setup. Keeping the class prevents the NPE.
+-keep class com.google.mlkit.vision.barcode.BarcodeScanning { *; }
+-keep class com.google.mlkit.** { *; }
+-dontwarn com.google.mlkit.**
