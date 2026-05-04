@@ -31,15 +31,18 @@ class TokenManager(private val context: Context) {
 
     var lastLoggedOutMeasureId: String?
         get() = prefs.getString(KEY_LAST_LOGGED_OUT_ID, null)
-        set(value) = prefs.edit().putString(KEY_LAST_LOGGED_OUT_ID, value).apply()
+        // commit(): paired with offlineLogoutPending; both must survive OOM for repair logic to work
+        set(value) { prefs.edit().putString(KEY_LAST_LOGGED_OUT_ID, value).commit() }
 
     var serverDeviceId: String?
         get() = prefs.getString(KEY_SERVER_DEVICE_ID, null)
-        set(value) = prefs.edit().putString(KEY_SERVER_DEVICE_ID, value).apply()
+        // commit(): written during login; must survive OOM kill before next disk flush
+        set(value) { prefs.edit().putString(KEY_SERVER_DEVICE_ID, value).commit() }
 
     var offlineLogoutPending: Boolean
         get() = prefs.getBoolean(KEY_OFFLINE_LOGOUT_PENDING, false)
-        set(value) = prefs.edit().putBoolean(KEY_OFFLINE_LOGOUT_PENDING, value).apply()
+        // commit(): flag must reach disk immediately; lost apply() = logout never retried
+        set(value) { prefs.edit().putBoolean(KEY_OFFLINE_LOGOUT_PENDING, value).commit() }
 
     val deviceId: String
         get() {
@@ -53,7 +56,7 @@ class TokenManager(private val context: Context) {
                 
                 // Prefix it so it's clearly different from server hardware IDs (MACs)
                 id = "PHONE_$androidId"
-                Log.i(TAG, "Generating NEW persistent deviceId: $id")
+                Log.d(TAG, "Generated new persistent deviceId")
                 // Use commit() to ensure it hits disk immediately
                 prefs.edit().putString(KEY_PHONE_ID, id).commit()
             } else {
@@ -67,7 +70,7 @@ class TokenManager(private val context: Context) {
             var token = prefs.getString("push_token", null)
             if (token == null) {
                 token = java.util.UUID.randomUUID().toString()
-                Log.i(TAG, "Generating NEW persistent pushToken: $token")
+                Log.d(TAG, "Generated new persistent pushToken")
                 // Use commit() for safety
                 prefs.edit().putString("push_token", token).commit()
             }
@@ -81,23 +84,27 @@ class TokenManager(private val context: Context) {
 
     var accessToken: String?
         get() = prefs.getString(KEY_ACCESS_TOKEN, null)
-        set(value) = prefs.edit().putString(KEY_ACCESS_TOKEN, value).apply()
+        // commit(): must be on disk before any API call reads it after login
+        set(value) { prefs.edit().putString(KEY_ACCESS_TOKEN, value).commit() }
 
     var institutionId: String?
         get() = prefs.getString(KEY_INSTITUTION_ID, null)
-        set(value) = prefs.edit().putString(KEY_INSTITUTION_ID, value).apply()
+        // commit(): must be consistent with isLoggedIn; OOM between writes → null crash
+        set(value) { prefs.edit().putString(KEY_INSTITUTION_ID, value).commit() }
 
     var patientId: String?
         get() = prefs.getString(KEY_PATIENT_ID, null)
-        set(value) = prefs.edit().putString(KEY_PATIENT_ID, value).apply()
+        set(value) { prefs.edit().putString(KEY_PATIENT_ID, value).commit() }
 
     var measureRecordId: String?
         get() = prefs.getString(KEY_MEASURE_RECORD_ID, null)
-        set(value) = prefs.edit().putString(KEY_MEASURE_RECORD_ID, value).apply()
+        // commit(): immutable after login; loss causes event tags to be orphaned
+        set(value) { prefs.edit().putString(KEY_MEASURE_RECORD_ID, value).commit() }
 
     var isLoggedIn: Boolean
         get() = prefs.getBoolean(KEY_IS_LOGGED_IN, false)
-        set(value) = prefs.edit().putBoolean(KEY_IS_LOGGED_IN, value).apply()
+        // commit(): gate for all authenticated flows; apply() loss → stale login state
+        set(value) { prefs.edit().putBoolean(KEY_IS_LOGGED_IN, value).commit() }
 
     var loginTime: Long
         get() = prefs.getLong(KEY_LOGIN_TIME, 0L)
@@ -115,7 +122,31 @@ class TokenManager(private val context: Context) {
             "1.0.0"
         }
 
-    fun clearAll() {
+    // Batch write for login phase 3 (authPatient). Single commit = one disk I/O on IO thread.
+    fun persistLoginSession(institutionId: String, patientId: String, vendorName: String?, loginTime: Long) {
+        val editor = prefs.edit()
+            .putString(KEY_INSTITUTION_ID, institutionId)
+            .putString(KEY_PATIENT_ID, patientId)
+            .putLong(KEY_LOGIN_TIME, loginTime)
+            .putBoolean(KEY_IS_LOGGED_IN, true)
+        if (vendorName != null) editor.putString(KEY_VENDOR_NAME, vendorName)
+        editor.commit()
+    }
+
+    // Batch write for login phase 4 (measurement confirmed). Single commit = one disk I/O on IO thread.
+    // measureRecordId is write-once: if already set it is preserved (immutable after login).
+    fun persistMeasurementInfo(serverDeviceId: String?, measureRecordId: String) {
+        val editor = prefs.edit()
+            .putBoolean(KEY_IS_MEASURING, true)
+            .remove(KEY_LAST_LOGGED_OUT_ID)
+        if (serverDeviceId != null) editor.putString(KEY_SERVER_DEVICE_ID, serverDeviceId)
+        if (prefs.getString(KEY_MEASURE_RECORD_ID, null) == null) {
+            editor.putString(KEY_MEASURE_RECORD_ID, measureRecordId)
+        }
+        editor.commit()
+    }
+
+    fun clearAll(clearPendingLogout: Boolean = false) {
         Log.w(TAG, "clearAll() called: clearing most preferences but preserving identity IDs")
         val phoneId = prefs.getString(KEY_PHONE_ID, null)
         val pushToken = prefs.getString("push_token", null)
@@ -123,15 +154,15 @@ class TokenManager(private val context: Context) {
         val savedServerUrl = prefs.getString(KEY_SERVER_URL, null)
         val offlinePending = prefs.getBoolean(KEY_OFFLINE_LOGOUT_PENDING, false)
         val serverDeviceId = prefs.getString(KEY_SERVER_DEVICE_ID, null)
-        
-        // Single atomic-like transaction to clear and restore
+
         val editor = prefs.edit().clear()
         if (phoneId != null) editor.putString(KEY_PHONE_ID, phoneId)
         if (pushToken != null) editor.putString("push_token", pushToken)
         if (lastLoggedOutId != null) editor.putString(KEY_LAST_LOGGED_OUT_ID, lastLoggedOutId)
         if (savedServerUrl != null) editor.putString(KEY_SERVER_URL, savedServerUrl)
-        if (offlinePending) editor.putBoolean(KEY_OFFLINE_LOGOUT_PENDING, true)
+        // clearPendingLogout = true when called after successful unsubscribe; otherwise preserve the flag
+        if (!clearPendingLogout && offlinePending) editor.putBoolean(KEY_OFFLINE_LOGOUT_PENDING, true)
         if (serverDeviceId != null) editor.putString(KEY_SERVER_DEVICE_ID, serverDeviceId)
-        editor.commit() // Use commit() here for immediate persistence
+        editor.commit()
     }
 }
