@@ -109,7 +109,8 @@ fun HistoryScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 32.dp, top = 16.dp),
+                .navigationBarsPadding()
+                .padding(bottom = 16.dp, top = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(

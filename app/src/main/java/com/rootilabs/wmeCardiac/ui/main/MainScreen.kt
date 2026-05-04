@@ -403,6 +403,7 @@ fun MainScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Color(0xFF888888))
+                                .navigationBarsPadding()
                                 .padding(horizontal = 20.dp, vertical = 14.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {

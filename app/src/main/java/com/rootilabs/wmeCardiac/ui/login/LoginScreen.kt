@@ -433,7 +433,8 @@ fun LoginScreen(
                 Text(stringResource(id = R.string.login), fontSize = 18.sp, color = Color.White)
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
 }
