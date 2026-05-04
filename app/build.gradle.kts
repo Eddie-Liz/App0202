@@ -1,5 +1,6 @@
 import com.google.devtools.ksp.gradle.KspExtension
 import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
+import java.util.Properties
 
 plugins {
 
@@ -14,21 +15,40 @@ android {
     namespace = "com.rootilabs.wmeCardiac"
     compileSdk = 35
 
+    val keystoreProps = Properties().apply {
+        val f = rootProject.file("keystore.properties")
+        if (f.exists()) load(f.inputStream())
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(keystoreProps["storeFile"] as String)
+            storePassword = keystoreProps["storePassword"] as String
+            keyAlias = keystoreProps["keyAlias"] as String
+            keyPassword = keystoreProps["keyPassword"] as String
+        }
+    }
+
     defaultConfig {
-        applicationId = "com.rootilabs.wmeCardiac"
+        applicationId = "com.rootilabs.wmeCardiac2"
         minSdk = 24
         targetSdk = 36
-        versionCode = 9
+        versionCode = 13
         versionName = "1.0.8"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
             // Firebase App Distribution configuration
             firebaseAppDistribution {
                 artifactType = "APK"
@@ -72,7 +92,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
     implementation("com.google.firebase:firebase-analytics")
 
 
@@ -102,9 +122,9 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Room
-    implementation("androidx.room:room-runtime:2.7.0-rc01")
-    implementation("androidx.room:room-ktx:2.7.0-rc01")
-    ksp("androidx.room:room-compiler:2.7.0-rc01")
+    implementation("androidx.room:room-runtime:2.7.0")
+    implementation("androidx.room:room-ktx:2.7.0")
+    ksp("androidx.room:room-compiler:2.7.0")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.5")
@@ -116,14 +136,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // CameraX
-    val cameraxVersion = "1.3.0"
+    val cameraxVersion = "1.4.0"
     implementation("androidx.camera:camera-core:$cameraxVersion")
     implementation("androidx.camera:camera-camera2:$cameraxVersion")
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-view:$cameraxVersion")
 
     // ML Kit Barcode Scanning
-    implementation("com.google.mlkit:barcode-scanning:17.2.0")
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
 
     // WorkManager (Background processing)
     implementation("androidx.work:work-runtime-ktx:2.10.0")
