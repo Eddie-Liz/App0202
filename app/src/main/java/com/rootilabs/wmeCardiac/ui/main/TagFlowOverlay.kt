@@ -210,11 +210,12 @@ private fun BoxScope.SymptomSelectionContent(
                         
                         Text(
                             text = stringResource(id = symptom.labelResId),
-                            fontSize = 20.sp, // Reduced slightly (22 -> 20)
+                            fontSize = 18.sp, // Reduced (20 -> 18) for better fit
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF5B5B5B),
                             modifier = Modifier.weight(1f),
-                            softWrap = true // Ensure multi-line support
+                            softWrap = true, // Ensure multi-line support
+                            maxLines = 3    // Allow up to 3 lines
                         )
 
                         if (isSelected) {
@@ -386,6 +387,7 @@ private fun BoxScope.ExerciseSelectionContent(viewModel: MainViewModel) {
                     HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 1.dp)
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         TagFlowBottomButtons(
@@ -423,11 +425,11 @@ private fun BoxScope.ConfirmationContent(viewModel: MainViewModel) {
                     Text(
                         text = stringResource(id = R.string.symptoms_title),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 32.sp,
+                        fontSize = 24.sp,
                         color = Color(0xFF424242),
                         modifier = Modifier.weight(1f)
                     )
-                    Text("›", fontSize = 40.sp, color = Color(0xFFBDBDBD))
+                    Text("›", fontSize = 32.sp, color = Color(0xFFBDBDBD))
                 }
 
                 Column(
@@ -470,11 +472,11 @@ private fun BoxScope.ConfirmationContent(viewModel: MainViewModel) {
                     Text(
                         text = stringResource(id = R.string.intensity_title),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 32.sp,
+                        fontSize = 24.sp,
                         color = Color(0xFF424242),
                         modifier = Modifier.weight(1f)
                     )
-                    Text("›", fontSize = 40.sp, color = Color(0xFFBDBDBD))
+                    Text("›", fontSize = 32.sp, color = Color(0xFFBDBDBD))
                 }
 
                 Box(
@@ -491,6 +493,7 @@ private fun BoxScope.ConfirmationContent(viewModel: MainViewModel) {
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         // 固定在底部的按鈕（與症狀/強度頁面位置一致）
@@ -515,7 +518,8 @@ private fun TagFlowBottomButtons(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .navigationBarsPadding(),
         horizontalArrangement = Arrangement.spacedBy(8.dp) // Reduced gap for more space
     ) {
         OutlinedButton(
@@ -533,10 +537,10 @@ private fun TagFlowBottomButtons(
         ) {
             Text(
                 leftText, 
-                fontSize = 18.sp, // Reduced (24 -> 18) for better fit
+                fontSize = 16.sp, // Further reduced (18 -> 16) for better fit
                 fontWeight = FontWeight.Bold,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                lineHeight = 22.sp
+                lineHeight = 20.sp
             )
         }
 
@@ -556,11 +560,11 @@ private fun TagFlowBottomButtons(
         ) {
             Text(
                 rightText, 
-                fontSize = 18.sp, // Reduced (24 -> 18)
+                fontSize = 16.sp, // Further reduced (18 -> 16)
                 color = Color.White, 
                 fontWeight = FontWeight.Bold,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                lineHeight = 22.sp
+                lineHeight = 20.sp
             )
         }
     }

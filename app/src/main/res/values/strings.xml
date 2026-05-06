@@ -47,7 +47,10 @@
     <string name="symptom_palpitations">Palpitations</string>
     <string name="symptom_fatigue">Fatigue/Weakness</string>
     <string name="symptom_rapid_heartbeat">Rapid heartbeat</string>
+    <string name="symptom_irregular_heartbeat">Irregular heartbeat</string>
     <string name="symptom_shortness_of_breath">Shortness of breath</string>
+    <string name="symptom_headache">Headache</string>
+    <string name="symptom_nausea">Nausea</string>
     <string name="symptom_others">Others (Enter other symptoms)</string>
     <string name="intensity_high">High Intensity</string>
     <string name="intensity_medium">Medium Intensity</string>

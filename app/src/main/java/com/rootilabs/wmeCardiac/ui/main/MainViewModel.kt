@@ -32,10 +32,13 @@ data class SymptomItem(
 val symptoms = listOf(
     SymptomItem(1, R.string.symptom_chest_pain, IconSource.Resource(R.drawable.icon_chestpain)),
     SymptomItem(2, R.string.symptom_dizziness, IconSource.Resource(R.drawable.icon_dizzy)),
-    SymptomItem(7, R.string.symptom_palpitations, IconSource.Resource(R.drawable.icon_palpitation)),  // iOS 使用 ID 7
+    SymptomItem(3, R.string.symptom_headache, IconSource.Vector(Icons.Default.Warning)), // Placeholder vector
+    SymptomItem(7, R.string.symptom_palpitations, IconSource.Resource(R.drawable.icon_palpitation)),
     SymptomItem(4, R.string.symptom_fatigue, IconSource.Resource(R.drawable.icon_tired)),
     SymptomItem(5, R.string.symptom_rapid_heartbeat, IconSource.Resource(R.drawable.icon_tachycardia)),
-    SymptomItem(9, R.string.symptom_shortness_of_breath, IconSource.Resource(R.drawable.icon_gasp))   // iOS 使用 ID 9
+    SymptomItem(6, R.string.symptom_irregular_heartbeat, IconSource.Vector(Icons.Default.FavoriteBorder)), // Placeholder
+    SymptomItem(9, R.string.symptom_shortness_of_breath, IconSource.Resource(R.drawable.icon_gasp)),
+    SymptomItem(8, R.string.symptom_nausea, IconSource.Vector(Icons.Default.Face)) // Placeholder
 )
 
 // 運動強度
@@ -124,7 +127,7 @@ class MainViewModel : ViewModel() {
                 )
 
                 if (unsyncedCount > 0) {
-                    triggerAutoSync()
+                    // triggerAutoSync() // Disabled as per user request: "不要自動上傳"
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, "Error loading event tags", e)
@@ -134,6 +137,8 @@ class MainViewModel : ViewModel() {
     }
 
     private fun triggerAutoSync() {
+        // Disabled as per user request
+        /*
         if (isSyncing) return
         
         viewModelScope.launch {
@@ -162,6 +167,7 @@ class MainViewModel : ViewModel() {
                 isSyncing = false
             }
         }
+        */
     }
 
     private fun isNetworkError(t: Throwable): Boolean {
@@ -367,7 +373,11 @@ class MainViewModel : ViewModel() {
             if (uploadResult.isSuccess) {
                 Log.i(TAG, "Auto-upload success")
             } else {
-                Log.e(TAG, "Auto-upload failed: ${uploadResult.exceptionOrNull()?.message}")
+                val error = uploadResult.exceptionOrNull()
+                Log.e(TAG, "Auto-upload failed: ${error?.message}")
+                if (error != null && isNetworkError(error)) {
+                    uiState = uiState.copy(showSyncErrorBadge = true)
+                }
             }
 
             loadEventTags()

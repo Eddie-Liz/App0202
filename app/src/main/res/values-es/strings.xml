@@ -47,9 +47,12 @@
     <string name="symptom_dizziness">Mareos</string>
     <string name="symptom_palpitations">Palpitaciones</string>
     <string name="symptom_fatigue">Fatiga/Debilidad</string>
-    <string name="symptom_rapid_heartbeat">Latidos rápidos</string>
+    <string name="symptom_rapid_heartbeat">Latidos cardíacos rápidos</string>
+    <string name="symptom_irregular_heartbeat">Latidos cardíacos irregulares</string>
     <string name="symptom_shortness_of_breath">Falta de aire</string>
-    <string name="symptom_others">Otros (Ingrese otros síntomas)</string>
+    <string name="symptom_headache">Dolor de cabeza</string>
+    <string name="symptom_nausea">Náuseas</string>
+    <string name="symptom_others">Otros (ingrese otros síntomas)</string>
 
     <!-- Intensity -->
     <string name="intensity_high">Alta intensidad</string>

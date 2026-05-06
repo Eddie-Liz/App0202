@@ -47,8 +47,11 @@
     <string name="symptom_dizziness">Vertigini</string>
     <string name="symptom_palpitations">Palpitazioni</string>
     <string name="symptom_fatigue">Stanchezza/Debolezza</string>
-    <string name="symptom_rapid_heartbeat">Battito accelerato</string>
+    <string name="symptom_rapid_heartbeat">Battito cardiaco rapido</string>
+    <string name="symptom_irregular_heartbeat">Battito cardiaco irregolare</string>
     <string name="symptom_shortness_of_breath">Mancanza di respiro</string>
+    <string name="symptom_headache">Mal di testa</string>
+    <string name="symptom_nausea">Nausea</string>
     <string name="symptom_others">Altri (Inserisci altri sintomi)</string>
 
     <!-- Intensity -->

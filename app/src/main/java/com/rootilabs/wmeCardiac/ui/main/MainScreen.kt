@@ -353,13 +353,13 @@ fun MainScreen(
 
                             Text(
                                 text = currentTime.value,
-                                fontSize = 96.sp,
+                                fontSize = 110.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF797979)
                             )
                             Text(
                                 text = currentDate.value,
-                                fontSize = 24.sp,
+                                fontSize = 28.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = Color(0xFF797979),
                                 modifier = Modifier.padding(top = 2.dp)

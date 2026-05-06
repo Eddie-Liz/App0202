@@ -48,7 +48,10 @@
     <string name="symptom_palpitations">Herzrasen</string>
     <string name="symptom_fatigue">Müdigkeit/Schwäche</string>
     <string name="symptom_rapid_heartbeat">Schneller Herzschlag</string>
+    <string name="symptom_irregular_heartbeat">Unregelmäßiger Herzschlag</string>
     <string name="symptom_shortness_of_breath">Atemnot</string>
+    <string name="symptom_headache">Kopfschmerzen</string>
+    <string name="symptom_nausea">Übelkeit</string>
     <string name="symptom_others">Andere (Andere Symptome eingeben)</string>
 
     <!-- Intensity -->

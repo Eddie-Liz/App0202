@@ -112,13 +112,19 @@ class LoginViewModel : ViewModel() {
 
             Log.d(TAG, "Found ${measurements.size} measurements")
             
-            // Phase 1 Success: Show selection UI directly
-            uiState = uiState.copy(
-                isLoading = false,
-                measurements = measurements,
-                showDuplicateWarning = false, // Always skip independent warning screen
-                showDeviceSheet = true      // Always show selection sheet directly
-            )
+            if (measurements.size == 1) {
+                // Auto-select the only device
+                Log.d(TAG, "Auto-selecting the only measurement: ${measurements[0].measureRecordId}")
+                onMeasurementSelected(measurements[0])
+            } else {
+                // Multiple devices: Show selection UI directly
+                uiState = uiState.copy(
+                    isLoading = false,
+                    measurements = measurements,
+                    showDuplicateWarning = false, // Always skip independent warning screen
+                    showDeviceSheet = true      // Always show selection sheet directly
+                )
+            }
         } catch (e: Throwable) {
             Log.e(TAG, "Error in login phase 1", e)
             uiState = uiState.copy(isLoading = false, error = "FATAL_ERROR")

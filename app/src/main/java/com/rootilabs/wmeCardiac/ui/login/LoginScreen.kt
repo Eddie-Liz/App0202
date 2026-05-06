@@ -76,7 +76,7 @@ fun LoginScreen(
                         modifier = Modifier.fillMaxWidth().height(48.dp).background(TagGoGreen),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("test", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text(stringResource(R.string.warning), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     }
                     
                     Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -156,6 +156,7 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF616161))
+            .navigationBarsPadding()
     ) {
         // Green toolbar
         Column(
@@ -433,6 +434,25 @@ fun LoginScreen(
                 Text(stringResource(id = R.string.login), fontSize = 18.sp, color = Color.White)
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // App Version Display
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val versionName = remember {
+                try {
+                    context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.8"
+                } catch (e: Exception) {
+                    "1.0.8"
+                }
+            }
+            Text(
+                text = stringResource(id = R.string.version, versionName),
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
             Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
@@ -460,7 +480,7 @@ fun DeviceSelectionSheet(
                     modifier = Modifier.fillMaxWidth().height(48.dp).background(TagGoGreen),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("test", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(stringResource(R.string.select_device), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     IconButton(
                         onClick = onDismiss,
                         modifier = Modifier.align(Alignment.CenterEnd).padding(end = 4.dp)
@@ -518,14 +538,15 @@ fun DeviceSelectionSheet(
                                     .clickable { selectedItem = info },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = displayText,
-                                    fontSize = if (isLogged) 20.sp else 24.sp,
-                                    color = if (isSelected) Color.Gray else Color.LightGray,
-                                    textAlign = TextAlign.Center,
-                                    maxLines = 1,
-                                    softWrap = false
-                                )
+                            Text(
+                                text = displayText,
+                                fontSize = if (isLogged) 18.sp else 22.sp,
+                                color = if (isSelected) Color.Gray else Color.LightGray,
+                                textAlign = TextAlign.Center,
+                                maxLines = 2,
+                                softWrap = true,
+                                lineHeight = 24.sp
+                            )
                             }
                         }
                     }
@@ -579,9 +600,10 @@ fun ServerSelectionSheet(
         onDismissRequest = onDismiss,
         dragHandle = null,
         containerColor = Color(0xFFE0E0E0),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        contentWindowInsets = { WindowInsets.navigationBars } // Correct parameter name
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp)) {
             // Header with Done only
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),

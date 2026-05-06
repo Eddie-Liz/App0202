@@ -47,9 +47,12 @@
     <string name="symptom_dizziness">めまい</string>
     <string name="symptom_palpitations">動悸</string>
     <string name="symptom_fatigue">疲労・倦怠感</string>
-    <string name="symptom_rapid_heartbeat">心拍数上昇</string>
+    <string name="symptom_rapid_heartbeat">心拍が速い</string>
+    <string name="symptom_irregular_heartbeat">不規則な心拍</string>
     <string name="symptom_shortness_of_breath">息切れ</string>
-    <string name="symptom_others">その他 (他の症状を入力)</string>
+    <string name="symptom_headache">頭痛</string>
+    <string name="symptom_nausea">吐き気</string>
+    <string name="symptom_others">その他（他の症状を入力）</string>
 
     <!-- Intensity -->
     <string name="intensity_high">高強度運動</string>

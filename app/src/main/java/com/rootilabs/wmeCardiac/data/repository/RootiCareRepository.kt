@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import com.rootilabs.wmeCardiac.di.ServiceLocator
 import com.rootilabs.wmeCardiac.data.worker.LogoutWorker
+import com.rootilabs.wmeCardiac.data.worker.TagUploadWorker
 
 class RootiCareRepository(
     private val authApi: AuthApi,
@@ -294,6 +295,21 @@ class RootiCareRepository(
         }
     }
 
+    fun enqueueTagUploadWorker() {
+        try {
+            val request = OneTimeWorkRequestBuilder<TagUploadWorker>()
+                .addTag("TagUploadWorker")
+                .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                .build()
+
+            WorkManager.getInstance(ServiceLocator.appContext)
+                .enqueueUniqueWork("TagUploadWorker", ExistingWorkPolicy.KEEP, request)
+            Log.d(TAG, "Enqueued TagUploadWorker")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to enqueue TagUploadWorker: ${e.message}")
+        }
+    }
+
     /**
      * Revoke an old/stale subscription during login 409 retry.
      * Unlike unsubscribePatient(), this does NOT clear local data and does NOT enqueue LogoutWorker,
@@ -378,12 +394,14 @@ class RootiCareRepository(
                     }
                     else -> {
                         val apiError = parseError(errorBody)
+                        // enqueueTagUploadWorker() // Disabled as per user request
                         Result.failure(Exception(apiError))
                     }
                 }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Upload exception", e)
+            // enqueueTagUploadWorker() // Disabled as per user request
             Result.failure(e)
         }
     }

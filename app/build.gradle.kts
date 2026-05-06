@@ -22,10 +22,13 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(keystoreProps["storeFile"] as String)
-            storePassword = keystoreProps["storePassword"] as String
-            keyAlias = keystoreProps["keyAlias"] as String
-            keyPassword = keystoreProps["keyPassword"] as String
+            val storeFileProp = keystoreProps["storeFile"] as? String
+            if (storeFileProp != null) {
+                storeFile = file(storeFileProp)
+                storePassword = keystoreProps["storePassword"] as? String ?: ""
+                keyAlias = keystoreProps["keyAlias"] as? String ?: ""
+                keyPassword = keystoreProps["keyPassword"] as? String ?: ""
+            }
         }
     }
 
@@ -33,8 +36,8 @@ android {
         applicationId = "com.rootilabs.wmeCardiac2"
         minSdk = 24
         targetSdk = 36
-        versionCode = 16
-        versionName = "1.0.8"
+        versionCode = 17
+        versionName = "1.0.9"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -53,6 +56,11 @@ android {
             firebaseAppDistribution {
                 artifactType = "APK"
                 releaseNotes = """
+                    [v1.0.9 UI & Bug Fixes]
+                    - EN: Reverted auto-upload logic; tags are manually uploaded via history.
+                    - CH: 取消斷網自動補傳機制，統一於歷史紀錄頁面手動重試上傳。
+                    - EN: Added missing translations for Headache, Nausea, and Irregular Heartbeat.
+                    - CH: 補齊頭痛、噁心、心律不整之多國語系翻譯。
                     [v1.0.8 Offline Logout & UI Fixes]
                     - EN: Update logout logic to properly handle network errors; logout will fail instead of clearing local states.
                     - CH: 修正斷網時的登出流程，在無網路時會直接失敗並保留本地帳號資料。

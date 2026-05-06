@@ -49,7 +49,10 @@
     <string name="symptom_palpitations">心悸</string>
     <string name="symptom_fatigue">疲倦虛弱</string>
     <string name="symptom_rapid_heartbeat">心跳過快</string>
+    <string name="symptom_irregular_heartbeat">心律不整</string>
     <string name="symptom_shortness_of_breath">呼吸急促</string>
+    <string name="symptom_headache">頭痛</string>
+    <string name="symptom_nausea">噁心</string>
     <string name="symptom_others">其他(請輸入其他症狀)</string>
     
     <!-- Intensity -->

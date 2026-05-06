@@ -48,7 +48,10 @@
     <string name="symptom_palpitations">Palpitations</string>
     <string name="symptom_fatigue">Fatigue/Faiblesse</string>
     <string name="symptom_rapid_heartbeat">Battements de cœur rapides</string>
+    <string name="symptom_irregular_heartbeat">Battements de cœur irréguliers</string>
     <string name="symptom_shortness_of_breath">Essoufflement</string>
+    <string name="symptom_headache">Maux de tête</string>
+    <string name="symptom_nausea">Nausée</string>
     <string name="symptom_others">Autres (Entrez d\'autres symptômes)</string>
 
     <!-- Intensity -->
