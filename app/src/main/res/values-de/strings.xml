@@ -80,7 +80,8 @@
     <string name="invalid_measurement_record">Ungültiger Messdatensatz.</string>
     <string name="no_active_subscription_found">Kein aktives Abonnement gefunden.</string>
     <string name="device_s_id">Geräte-ID</string>
-    <string name="has_been_logged_in">Bereits angemeldet</string>
+    <string name="check">Prüfen</string>
+    <string name="has_been_logged_in">Belegt</string>
     <string name="no_device_has_started_recording">Kein Gerät hat die Aufnahme gestartet.</string>
     <string name="duplicate_patient_id_detected_please_verify_before_setting">Doppelte Patienten-ID erkannt. Bitte vor dem Festlegen überprüfen.</string>
     <string name="please_fill_out_account_id_and_id_number">Bitte Konto-ID und ID-Nummer ausfüllen</string>

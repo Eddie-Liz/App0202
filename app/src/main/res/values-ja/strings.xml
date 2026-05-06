@@ -80,7 +80,8 @@
     <string name="invalid_measurement_record">無効な測定記録です。</string>
     <string name="no_active_subscription_found">有効なサブスクリプションが見つかりません。</string>
     <string name="device_s_id">デバイスID</string>
-    <string name="has_been_logged_in">ログイン済み</string>
+    <string name="check">確認</string>
+    <string name="has_been_logged_in">使用中</string>
     <string name="no_device_has_started_recording">録音を開始したデバイスはありません。</string>
     <string name="duplicate_patient_id_detected_please_verify_before_setting">重複する患者IDが検出されました。設定前にご確認ください。</string>
     <string name="please_fill_out_account_id_and_id_number">アカウントIDとID番号を入力してください</string>

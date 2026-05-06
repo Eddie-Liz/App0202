@@ -73,7 +73,7 @@
     <string name="no_intensity_recorded">No intensity recorded</string>
     <string name="back_desc">Back</string>
     <string name="medical_clinic">Medical Clinic:</string>
-    <string name="check">Check</string>
+    <string name="check">Review</string>
     <string name="current_exercise_intensity">Current exercise intensity</string>
     <string name="current_exercise_intensity_2">2.Current exercise intensity</string>
     <string name="exercise_intensity_before_tagging">Exercise Intensity before tagging</string>
@@ -128,7 +128,7 @@
     <string name="duplicate_patient_id_detected_please_verify_before_setting">Duplicate Patient ID detected. Please verify before setting.</string>
     <string name="no_device_has_started_recording">No device has started recording.</string>
     <string name="select_device">Select Device</string>
-    <string name="has_been_logged_in">Has been logged in</string>
+    <string name="has_been_logged_in">In use</string>
     <string name="device_s_id">Device ID</string>
     <string name="this_patient_has_been_logged_in">This patient is already logged in.</string>
     <string name="please_fill_out_account_id_and_id_number">Please fill out Account ID and ID Number</string>

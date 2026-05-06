@@ -80,7 +80,8 @@
     <string name="invalid_measurement_record">Registrazione di misurazione non valida.</string>
     <string name="no_active_subscription_found">Nessun abbonamento attivo trovato.</string>
     <string name="device_s_id">ID del dispositivo</string>
-    <string name="has_been_logged_in">Già connesso</string>
+    <string name="check">Vedere</string>
+    <string name="has_been_logged_in">In uso</string>
     <string name="no_device_has_started_recording">Nessun dispositivo ha iniziato la registrazione.</string>
     <string name="duplicate_patient_id_detected_please_verify_before_setting">Rilevato ID paziente duplicato. Verificare prima di impostare.</string>
     <string name="please_fill_out_account_id_and_id_number">Compila ID account e numero identificativo</string>
