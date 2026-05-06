@@ -65,7 +65,7 @@
     <string name="voice_input_hint">Mikrofon tippen zum Sprechen...</string>
     <string name="voice_input">Spracheingabe</string>
     <string name="tag_time_label">Tag-Zeit: %1$s</string>
-    <string name="cancel_tag">Abbrechen</string>
+    <string name="cancel_tag">Storno</string>
     <string name="next_step">Weiter</string>
     <string name="confirm">Bestätigen</string>
     <string name="no_symptoms_selected">Keine Symptome ausgewählt</string>

@@ -65,7 +65,7 @@
     <string name="voice_input_hint">點擊右側麥克風語音輸入...</string>
     <string name="voice_input">語音輸入</string>
     <string name="tag_time_label">標註時間: %1$s</string>
-    <string name="cancel_tag">取消誤觸</string>
+    <string name="cancel_tag">取消</string>
     <string name="next_step">下一步</string>
     <string name="confirm">確定</string>
     <string name="no_symptoms_selected">尚未選擇任何症狀</string>
