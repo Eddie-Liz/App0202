@@ -33,7 +33,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.rootilabs.wmeCardiac2"
+        applicationId = "com.rootilabs.wmeCardiac"
         minSdk = 24
         targetSdk = 36
         versionCode = 17
